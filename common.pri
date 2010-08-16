@@ -15,9 +15,9 @@ LIBS += -L$$PWD/gui
 
 WARNINGS += -Wall
 
-QMAKE_CC = g++
+#QMAKE_CC = g++
 QMAKE_CLEAN += *.dylib *.a
-#QMAKE_CXXFLAGS += -m32
+#QMAKE_CXXFLAGS += $$system(pkg-config --cflags --libs libmapper-0 liblo)
 
 # The following keeps the generated files at least somewhat separate
 # from the source files.

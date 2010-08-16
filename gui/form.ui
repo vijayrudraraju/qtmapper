@@ -27,7 +27,7 @@
     <number>2</number>
    </property>
    <item>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QTabWidget" name="edit_mode_toggle">
      <property name="tabPosition">
       <enum>QTabWidget::North</enum>
      </property>
@@ -49,7 +49,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QTabWidget" name="inner_tabWidget">
+        <widget class="QTabWidget" name="selection_mode_toggle">
          <property name="currentIndex">
           <number>1</number>
          </property>
@@ -62,7 +62,17 @@
             <number>2</number>
            </property>
            <item>
-            <widget class="QListView" name="listView"/>
+            <widget class="QTableView" name="source_list">
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::MultiSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -75,21 +85,24 @@
             <number>2</number>
            </property>
            <item>
-            <widget class="QListView" name="listView_2"/>
+            <widget class="QTableView" name="destination_list">
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::MultiSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton">
-         <property name="text">
-          <string>add test device</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGraphicsView" name="graphicsView">
+        <widget class="MapperGraphicsView" name="graphicsView">
          <property name="verticalScrollBarPolicy">
           <enum>Qt::ScrollBarAlwaysOff</enum>
          </property>
@@ -98,6 +111,9 @@
          </property>
          <property name="dragMode">
           <enum>QGraphicsView::RubberBandDrag</enum>
+         </property>
+         <property name="transformationAnchor">
+          <enum>QGraphicsView::AnchorUnderMouse</enum>
          </property>
         </widget>
        </item>
@@ -112,6 +128,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MapperGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>mappergraphicsview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

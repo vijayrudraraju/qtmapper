@@ -4,16 +4,22 @@
 #include <QGraphicsItem>
 #include <QGraphicsView>
 #include <QLabel>
+#include <QStandardItem>
 
 //#include <mapper/mapper.h>
 
 class Edge;
 class Form;
 
-class Node : public QGraphicsItem
+class Node : public QObject, public QGraphicsItem
 {
+
+    Q_OBJECT
+    Q_INTERFACES( QGraphicsItem )
+
 public:
     Node(QGraphicsView *graphWidget);
+    ~Node();
 
     void addEdge(Edge *edge);
     QList<Edge *> edges() const;
@@ -21,7 +27,7 @@ public:
     enum { Type = UserType + 1 };
     int type() const { return Type; }
 
-    void calculateForces();
+    //void calculateForces();
     bool advance();
 
     QRectF boundingRect() const;
@@ -31,6 +37,12 @@ public:
                QWidget *widget);
 
     void setName( const char* new_name );
+
+    QList<QStandardItem*> model_list;
+    bool is_source;
+
+signals:
+    void selectionStateChanged( bool newValue );
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
@@ -43,7 +55,7 @@ private:
     QPointF newPos;
     QGraphicsView *graph;
 
-    QLabel* name_label;
+    QGraphicsSimpleTextItem name_item;
     const char* name;
 
 };

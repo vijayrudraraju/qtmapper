@@ -10,8 +10,10 @@ FORMS = form.ui
 
 HEADERS += form.h \
 node.h \
-edge.h
+edge.h \
+    mappergraphicsview.h
 
 SOURCES += form.cpp \
 node.cpp \
-edge.cpp
+edge.cpp \
+    mappergraphicsview.cpp

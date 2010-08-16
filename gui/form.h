@@ -4,6 +4,7 @@
 #include <list>
 
 #include <QTimer>
+#include <QStandardItemModel>
 
 #include <mapper/mapper.h>
 
@@ -11,8 +12,8 @@
 #include "edge.h"
 #include "node.h"
 
-class Form : public QWidget, private Ui::Form
-{
+class Form : public QWidget, private Ui::Form {
+
     Q_OBJECT
 
 public:
@@ -29,14 +30,16 @@ public:
 
 public slots:
     void update();
+    void updateSelectedNodes( bool new_value );
+    void updateSelectionMode( int index );
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
+    //void keyPressEvent(QKeyEvent *event);
     //void timerEvent(QTimerEvent *event);
-    void wheelEvent(QWheelEvent *event);
+    //void wheelEvent(QWheelEvent *event);
+    //void viewportEvent(QEvent* event);
     //void drawBackground(QPainter *painter, const QRectF &rect);
-
-    void scaleView(qreal scaleFactor);
+    //void scaleView(qreal scaleFactor);
 
 private:
     int timerId;
@@ -46,6 +49,14 @@ private:
     QTimer* timer;
     device_callback_func* db_callback_function;
     mapper_device qtmapper;
+
+    QStandardItemModel* neighborhood_model;
+    QStandardItemModel* source_model;
+    QStandardItemModel* destination_model;
+
+    int default_x;
+    int default_y;
+
 };
 
 #endif // FORM_H

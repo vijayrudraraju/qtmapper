@@ -7,23 +7,46 @@
 #include <math.h>
 
 Form::Form( QWidget *parent ) :
-    QWidget( parent )
-{
+    QWidget( parent ) {
+
     setupUi( this );
+
+    default_x = 0;
+    default_y = 100;
 
     timer = new QTimer( this );
     QObject::connect( timer, SIGNAL(timeout()), this, SLOT(update()) );
-    timer->start(2000);
+    timer->start( 500 );
 
-    scene = new QGraphicsScene(graphicsView);
-    scene->setItemIndexMethod(QGraphicsScene::NoIndex);
-    scene->setSceneRect(-100, -100, 400, 200);
-    graphicsView->setScene(scene);
-    graphicsView->setCacheMode(QGraphicsView::CacheBackground);
-    graphicsView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    graphicsView->setRenderHint(QPainter::Antialiasing);
-    graphicsView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    graphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+    scene = new QGraphicsScene( graphicsView );
+    scene->setItemIndexMethod( QGraphicsScene::NoIndex );
+    scene->setSceneRect( 0, 0, 1000, 1000 );
+
+    graphicsView->
+            setScene( scene );
+    graphicsView->
+            setCacheMode( QGraphicsView::CacheBackground );
+    graphicsView->
+            setViewportUpdateMode( QGraphicsView::BoundingRectViewportUpdate );
+    graphicsView->
+            setRenderHint( QPainter::Antialiasing );
+    //graphicsView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    //graphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+    graphicsView->scale( qreal(0.7), qreal(0.7) );
+    graphicsView->setMinimumSize( 600, 300 );
+
+    source_model = new QStandardItemModel( 0, 4 );
+    source_list->setModel( source_model );
+    source_list->setMinimumSize( 600, 300 );
+
+    destination_model = new QStandardItemModel( 0, 4 );
+    destination_list->setModel( destination_model );
+    destination_list->setMinimumSize( 600, 300 );
+
+    connect( selection_mode_toggle, SIGNAL(currentChanged(int)),
+             this, SLOT(updateSelectionMode(int)) );
+
+    setWindowTitle( tr("Mapper GUI") );
 
     //Node *node1 = new Node(graphicsView);
     //Node *node2 = new Node(graphicsView);
@@ -59,34 +82,97 @@ Form::Form( QWidget *parent ) :
     scene->addItem(new Edge(node9, node8));
     */
 
-    //node1->setPos(-50, -50);
-    //node2->setPos(0, -50);
-    //node3->setPos(50, -50);
-    //node4->setPos(-50, 0);
-    //centerNode->setPos(0, 0);
-    //node6->setPos(50, 0);
-    //node7->setPos(-50, 50);
-    //node8->setPos(0, 50);
-    //node9->setPos(50, 50);
-
-    graphicsView->scale(qreal(1.0), qreal(1.0));
-    graphicsView->setMinimumSize(400, 200);
-    setWindowTitle(tr("Mapper GUI"));
-
-    /*QObject::connect(pushButton,
-                     SIGNAL(clicked()),
-                     this,
-                     SLOT(createTestDevice()));*/
 }
 
 Form::~Form(  ) {
+
+
 }
 
 void Form::update(  ) {
 
-    printf( "Form::update(  )\n");
+    printf( "Form::update(  )\n" );
 
     mdev_poll( this->qtmapper, 0 );
+
+}
+
+void Form::updateSelectedNodes( bool new_value ) {
+
+    Node* sender = (Node*)(this->sender());
+    int index;
+
+    printf ( "slot selection %d\n", new_value );
+    if ( new_value ) {
+
+        if ( selection_mode_toggle->currentIndex() == 0 ) {
+
+            if ( destination_model->
+                 indexFromItem( sender->model_list.first() ).isValid() ) {
+
+                index =
+                        destination_model->
+                        indexFromItem( sender->model_list.first() ).row();
+                printf ( "slot remove from destination table %d\n", index );
+                destination_model->takeRow( index );
+
+            }
+
+            sender->is_source = true;
+            printf ( "slot add to source table %d\n",
+                     source_model->rowCount() );
+            source_model->
+                appendRow( sender->model_list );
+
+        } else {
+
+            if ( source_model->
+                 indexFromItem( sender->model_list.first() ).isValid() ) {
+
+                index =
+                        source_model->
+                        indexFromItem( sender->model_list.first() ).row();
+                printf ( "slot remove from source table %d\n", index );
+                source_model->takeRow( index );
+
+            }
+
+            sender->is_source = false;
+            printf ( "slot add to destination table %d\n",
+                     destination_model->rowCount() );
+            destination_model->
+                appendRow( sender->model_list );
+
+        }
+
+    } else {
+
+        if ( sender->is_source &&
+             selection_mode_toggle->currentIndex() == 0 ) {
+
+            index =
+                    source_model->
+                    indexFromItem( sender->model_list.first() ).row();
+            printf ( "slot remove from source table %d\n", index );
+            source_model->takeRow( index );
+
+        } else if ( selection_mode_toggle->currentIndex() == 1 ){
+
+            index =
+                    destination_model->
+                    indexFromItem( sender->model_list.first() ).row();
+            printf ( "slot remove from destination table %d\n", index );
+            destination_model->takeRow( index );
+
+        }
+
+    }
+
+}
+
+void Form::updateSelectionMode( int index ) {
+
+    printf( "selection mode changed %d\n", index );
 
 }
 
@@ -106,12 +192,40 @@ void Form::setMapperDevice( mapper_device device ) {
 
 void Form::addNewDevice( const char* name ) {
 
-    printf( "addNewDevice(  )\n" );
+    printf( "addNewDevice(  ) %d %d \n", default_x, default_y );
 
     this->node_pointer_list.push_back( new Node(graphicsView) );
     this->node_pointer_list.back()->setName( name );
     scene->addItem(this->node_pointer_list.back());
-    this->node_pointer_list.back()->setPos(-50, -50);
+    this->node_pointer_list.back()->setPos( default_x, default_y );
+
+    QStandardItem* item_1 = new QStandardItem;
+    QStandardItem* item_2 = new QStandardItem;
+    QStandardItem* item_3 = new QStandardItem;
+    QStandardItem* item_4 = new QStandardItem;
+    item_1->setText( name );
+    item_2->setText( "0" );
+    item_3->setText( "10" );
+    item_4->setText( "121" );
+    this->node_pointer_list.back()->model_list
+            << item_1 << item_2 << item_3 << item_4;
+
+    printf( "appended row to model with %d %d columns\n",
+            this->node_pointer_list.back()->model_list.size(),
+            source_model->columnCount() );
+
+    QObject::connect( this->node_pointer_list.back(),
+                         SIGNAL(selectionStateChanged(bool)),
+                         this,
+                         SLOT(updateSelectedNodes(bool)) );
+
+    default_y += 70;
+    if ( default_y >= 400 ) {
+
+        default_y = 0;
+        default_x += 100;
+
+    }
 
 }
 
@@ -121,6 +235,7 @@ void Form::itemMoved()
         timerId = startTimer(1000 / 25);
 }
 
+/*
 void Form::scaleView(qreal scaleFactor)
 {
     qreal factor =
@@ -130,11 +245,25 @@ void Form::scaleView(qreal scaleFactor)
 
     graphicsView->scale(scaleFactor, scaleFactor);
 }
+*/
 
+/*
 void Form::wheelEvent(QWheelEvent *event) {
-    scaleView(pow((double)2, -event->delta() / 240.0));
-}
 
+    //scaleView(pow((double)2, -event->delta() / 240.0));
+    //event->accept();
+}
+*/
+
+/*
+void Form::viewportEvent( QEvent* event ) {
+
+    //event->accept();
+
+}
+*/
+
+/*
 void Form::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key()) {
@@ -156,16 +285,9 @@ void Form::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Minus:
         scaleView(1 / qreal(1.2));
         break;
-    /*
-    case Qt::Key_Space:
-    case Qt::Key_Enter:
-        foreach (QGraphicsItem *item, graphicsView->scene()->items()) {
-            if (qgraphicsitem_cast<Node *>(item))
-                item->setPos(-150 + qrand() % 300, -150 + qrand() % 300);
-        }
-        break;
-    */
+
     default:
         QWidget::keyPressEvent(event);
     }
 }
+*/
