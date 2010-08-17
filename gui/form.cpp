@@ -91,7 +91,7 @@ Form::~Form(  ) {
 
 void Form::update(  ) {
 
-    printf( "Form::update(  )\n" );
+    //printf( "Form::update(  )\n" );
 
     mdev_poll( this->qtmapper, 0 );
 
@@ -101,68 +101,77 @@ void Form::updateSelectedNodes( bool new_value ) {
 
     Node* sender = (Node*)(this->sender());
     int index;
+    printf( "new\n" );
 
-    printf ( "slot selection %d\n", new_value );
-    if ( new_value ) {
+    if ( selection_mode_toggle->currentIndex() == 0 && new_value ) {
 
-        if ( selection_mode_toggle->currentIndex() == 0 ) {
-
-            if ( destination_model->
-                 indexFromItem( sender->model_list.first() ).isValid() ) {
-
-                index =
-                        destination_model->
-                        indexFromItem( sender->model_list.first() ).row();
-                printf ( "slot remove from destination table %d\n", index );
-                destination_model->takeRow( index );
-
-            }
-
-            sender->is_source = true;
-            printf ( "slot add to source table %d\n",
-                     source_model->rowCount() );
-            source_model->
-                appendRow( sender->model_list );
-
-        } else {
-
-            if ( source_model->
-                 indexFromItem( sender->model_list.first() ).isValid() ) {
-
-                index =
-                        source_model->
-                        indexFromItem( sender->model_list.first() ).row();
-                printf ( "slot remove from source table %d\n", index );
-                source_model->takeRow( index );
-
-            }
-
-            sender->is_source = false;
-            printf ( "slot add to destination table %d\n",
-                     destination_model->rowCount() );
-            destination_model->
-                appendRow( sender->model_list );
-
-        }
-
-    } else {
-
-        if ( sender->is_source &&
-             selection_mode_toggle->currentIndex() == 0 ) {
-
-            index =
-                    source_model->
-                    indexFromItem( sender->model_list.first() ).row();
-            printf ( "slot remove from source table %d\n", index );
-            source_model->takeRow( index );
-
-        } else if ( selection_mode_toggle->currentIndex() == 1 ){
+        if ( sender->is_destination ) {
 
             index =
                     destination_model->
                     indexFromItem( sender->model_list.first() ).row();
             printf ( "slot remove from destination table %d\n", index );
             destination_model->takeRow( index );
+            sender->is_destination = false;
+
+        }
+
+        printf ( "slot add to source table %d\n",
+                 source_model->rowCount() );
+        if ( !sender->is_source ) {
+
+            source_model->
+                appendRow( sender->model_list );
+            sender->is_source = true;
+
+        }
+
+    } else if ( selection_mode_toggle->currentIndex() == 1 && new_value ) {
+
+        if ( sender->is_source ) {
+
+            index =
+                    source_model->
+                    indexFromItem( sender->model_list.first() ).row();
+            printf ( "slot remove from source table %d\n", index );
+            source_model->takeRow( index );
+            sender->is_source = false;
+
+        }
+
+        printf ( "slot add to destination table %d\n",
+                 destination_model->rowCount() );
+        if ( !sender->is_destination ) {
+
+            destination_model->
+                appendRow( sender->model_list );
+            sender->is_destination = true;
+
+        }
+
+    } else if ( selection_mode_toggle->currentIndex() == 0 && !new_value ) {
+
+        if ( sender->is_source ) {
+
+            index =
+                    source_model->
+                    indexFromItem( sender->model_list.first() ).row();
+            printf ( "slot remove from source table %d\n", index );
+            source_model->takeRow( index );
+            sender->is_source = false;
+
+        }
+
+    } else if ( selection_mode_toggle->currentIndex() == 1 && !new_value ) {
+
+        if ( sender->is_destination ) {
+
+            index =
+                    destination_model->
+                    indexFromItem( sender->model_list.first() ).row();
+            printf ( "slot remove from destination table %d\n", index );
+            destination_model->takeRow( index );
+            sender->is_destination = false;
 
         }
 

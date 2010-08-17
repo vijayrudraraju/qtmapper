@@ -51,7 +51,7 @@
        <item>
         <widget class="QTabWidget" name="selection_mode_toggle">
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tab_1">
           <attribute name="title">

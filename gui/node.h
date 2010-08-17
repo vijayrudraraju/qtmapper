@@ -40,6 +40,7 @@ public:
 
     QList<QStandardItem*> model_list;
     bool is_source;
+    bool is_destination;
 
 signals:
     void selectionStateChanged( bool newValue );

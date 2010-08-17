@@ -169,7 +169,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
             //graph->itemMoved();
             break;
         case ItemSelectedHasChanged:
-            printf ( "selection %d\n", value.toBool() );
+            printf ( "selection signal %s %d\n", name, value.toBool() );
             emit selectionStateChanged( value.toBool() );
             break;
         default:

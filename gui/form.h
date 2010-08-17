@@ -50,7 +50,7 @@ private:
     device_callback_func* db_callback_function;
     mapper_device qtmapper;
 
-    QStandardItemModel* neighborhood_model;
+    //QStandardItemModel* neighborhood_model;
     QStandardItemModel* source_model;
     QStandardItemModel* destination_model;
 
