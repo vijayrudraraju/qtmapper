@@ -129,10 +129,17 @@ void Node::paint( QPainter *painter,
                  const QStyleOptionGraphicsItem *option,
                  QWidget * ) {
 
-    if ( option->state & QStyle::State_Selected ) {
+    //if ( option->state & QStyle::State_Selected ) {
+    if ( is_source ) {
 
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::yellow);
+        painter->drawEllipse(-7, -7, 20, 20);
+
+    } else if ( is_destination ) {
+
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(Qt::blue);
         painter->drawEllipse(-7, -7, 20, 20);
 
     } else {

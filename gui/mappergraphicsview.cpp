@@ -1,0 +1,37 @@
+#include <math.h>
+
+#include <QWheelEvent>
+
+#include "mappergraphicsview.h"
+
+MapperGraphicsView::MapperGraphicsView(QWidget *parent) :
+    QGraphicsView(parent) {
+
+    printf( "MapperGraphicsView\n" );
+
+}
+
+void MapperGraphicsView::wheelEvent(QWheelEvent *event) {
+
+    scaleView(pow((double)2, event->delta() / 240.0));
+    //printf( "wheelEvent \n" );
+    event->accept();
+
+}
+
+void MapperGraphicsView::scaleView(qreal factor) {
+
+    // check to make sure we don't zoom out or in too far
+    qreal test_factor =
+        matrix().scale(factor, factor).mapRect(QRectF(0, 0, 1, 1)).width();
+
+    if ( test_factor < 0.07 || test_factor > 50 ) {
+
+        return;
+
+    }
+
+    // zoom
+    scale( factor, factor );
+
+}
