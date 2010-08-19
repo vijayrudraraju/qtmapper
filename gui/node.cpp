@@ -8,8 +8,11 @@
 #include "node.h"
 
 Node::Node(QGraphicsView *graphWidget)
-    : graph(graphWidget)
-{
+    : graph(graphWidget) {
+
+    is_destination = false;
+    is_source = false;
+
     setFlag(ItemIsSelectable);
     setFlag(ItemIsFocusable);
     //setFlag(ItemIsMovable);
@@ -170,6 +173,7 @@ void Node::paint( QPainter *painter,
 QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 
     switch (change) {
+
         case ItemPositionHasChanged:
             //foreach (Edge *edge, edgeList)
             //    edge->adjust();
@@ -181,12 +185,14 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
             break;
         default:
             break;
+
     };
 
     return QGraphicsItem::itemChange(change, value);
 
 }
 
+/*
 void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
     update();
@@ -200,3 +206,4 @@ void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     QGraphicsItem::mouseReleaseEvent(event);
 
 }
+*/

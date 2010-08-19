@@ -102,7 +102,7 @@
         </widget>
        </item>
        <item>
-        <widget class="MapperGraphicsView" name="graphicsView">
+        <widget class="MapperGraphicsView" name="graphics_view">
          <property name="verticalScrollBarPolicy">
           <enum>Qt::ScrollBarAlwaysOff</enum>
          </property>
@@ -123,6 +123,17 @@
       <attribute name="title">
        <string>edit</string>
       </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QTreeView" name="source_signal_list"/>
+       </item>
+       <item>
+        <widget class="QGraphicsView" name="graphicsView_2"/>
+       </item>
+       <item>
+        <widget class="QTreeView" name="destination_signal_list"/>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>

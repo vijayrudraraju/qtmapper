@@ -11,9 +11,11 @@ FORMS = form.ui
 HEADERS += form.h \
 node.h \
 edge.h \
-    mappergraphicsview.h
+    mappergraphicsview.h \
+    mappergraphicsscene.h
 
 SOURCES += form.cpp \
 node.cpp \
 edge.cpp \
-    mappergraphicsview.cpp
+    mappergraphicsview.cpp \
+    mappergraphicsscene.cpp

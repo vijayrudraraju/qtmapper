@@ -4,14 +4,29 @@
 
 #include "mappergraphicsview.h"
 
-MapperGraphicsView::MapperGraphicsView(QWidget *parent) :
+MapperGraphicsView::MapperGraphicsView( QWidget *parent ) :
     QGraphicsView(parent) {
 
     printf( "MapperGraphicsView\n" );
 
 }
 
-void MapperGraphicsView::wheelEvent(QWheelEvent *event) {
+void MapperGraphicsView::mousePressEvent( QMouseEvent *event ) {
+
+    QGraphicsView::mousePressEvent( event );
+    emit mouseStateChanged( true );
+
+}
+
+void MapperGraphicsView::mouseReleaseEvent( QMouseEvent *event ) {
+
+    QGraphicsView::mouseReleaseEvent( event );
+    emit mouseStateChanged( false );
+
+}
+
+
+void MapperGraphicsView::wheelEvent( QWheelEvent *event ) {
 
     scaleView(pow((double)2, event->delta() / 240.0));
     //printf( "wheelEvent \n" );
@@ -19,7 +34,7 @@ void MapperGraphicsView::wheelEvent(QWheelEvent *event) {
 
 }
 
-void MapperGraphicsView::scaleView(qreal factor) {
+void MapperGraphicsView::scaleView( qreal factor ) {
 
     // check to make sure we don't zoom out or in too far
     qreal test_factor =

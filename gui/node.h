@@ -38,18 +38,20 @@ public:
 
     void setName( const char* new_name );
 
-    QList<QStandardItem*> model_list;
+    QList<QStandardItem*> source_model_list;
+    QList<QStandardItem*> destination_model_list;
     bool is_source;
     bool is_destination;
+    int conflict_flag; //-1 => source, 0 => no confict, 1 => destination
 
 signals:
-    void selectionStateChanged( bool newValue );
+    void selectionStateChanged( bool is_selected );
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    //void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    //void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 
 private:
     QList<Edge *> edgeList;
