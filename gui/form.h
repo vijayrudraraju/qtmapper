@@ -31,9 +31,13 @@ public:
 
 public slots:
     void update();
-    void updateMouseState( bool is_pressed );
+
     void updateSelectedNodes( bool is_selected );
     void updateSelectionMode( int index );
+
+    void updateMouseState( bool is_pressed );
+    void updatePressedNode( Node* reference );
+    void updateReleasedNode( Node* reference );
 
 protected:
     //void keyPressEvent(QKeyEvent *event);
@@ -52,16 +56,13 @@ private:
     device_callback_func* db_callback_function;
     mapper_device qtmapper;
 
-    //QStandardItemModel* neighborhood_model;
-    //QStandardItemModel* real_time_source_model;
     QStandardItemModel* source_model;
-    //QStandardItemModel* real_time_destination_model;
     QStandardItemModel* destination_model;
 
     int default_x;
     int default_y;
 
-    //std::list <Node*> active_node_list;
+    const char* active_node_name;
     bool mouse_is_pressed;
     //int cued_add_action_index; //1, 2, 3, 4 (4 possible actions)
     //int cued_remove_action_index; //1, 2, 3, 4 (4 possible actions)

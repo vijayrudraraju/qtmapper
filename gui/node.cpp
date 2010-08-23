@@ -180,7 +180,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
             //graph->itemMoved();
             break;
         case ItemSelectedHasChanged:
-            printf ( "selection signal %s %d\n", name, value.toBool() );
+            printf ( "node says -> selection signal %s %d\n", name, value.toBool() );
             emit selectionStateChanged( value.toBool() );
             break;
         default:
@@ -192,18 +192,20 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 
 }
 
-/*
 void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
-    update();
+    printf( "node says -> mouse press %s\n", name);
+    emit nodePressed( this );
+
     QGraphicsItem::mousePressEvent(event);
 
 }
 
 void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
-    update();
+    printf( "node says -> mouse release %s\n", name);
+    emit nodeReleased( this );
+
     QGraphicsItem::mouseReleaseEvent(event);
 
 }
-*/

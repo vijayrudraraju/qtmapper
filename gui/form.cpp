@@ -48,7 +48,6 @@ Form::Form( QWidget *parent ) :
 
     connect( selection_mode_toggle, SIGNAL(currentChanged(int)),
              this, SLOT(updateSelectionMode(int)) );
-
     connect( graphics_view, SIGNAL(mouseStateChanged(bool)),
              this, SLOT(updateMouseState(bool)) );
 
@@ -105,7 +104,7 @@ void Form::update(  ) {
 
 void Form::updateMouseState( bool is_pressed ) {
 
-    printf( "mouse state %d\n", is_pressed );
+    printf( "form says -> mouse state %d\n", is_pressed );
     mouse_is_pressed = is_pressed;
 
     int index;
@@ -143,179 +142,103 @@ void Form::updateMouseState( bool is_pressed ) {
             (*it)->update();
 
         }
-        /*
-        if ( cued_remove_action_index == 1 ) {
-
-            index =
-                    real_time_destination_model->
-                    indexFromItem( sender->model_list.first() ).row();
-            printf ( "slot remove from destination table %d\n", index );
-            real_time_destination_model->takeRow( index );
-            sender->is_destination = false;
-
-        }  else if ( cued_remove_index == 3 ) {
-
-            index =
-                    real_time_source_model->
-                    indexFromItem( sender->model_list.first() ).row();
-            printf ( "slot remove from source table %d\n", index );
-            real_time_source_model->takeRow( index );
-            sender->is_source = false;
-
-        } else if ( cued_remove_index == 5 ) {
-
-            index =
-                    real_time_source_model->
-                    indexFromItem( sender->model_list.first() ).row();
-            printf ( "slot remove from source table %d\n", index );
-            real_time_source_model->takeRow( index );
-            sender->is_source = false;
-
-        } else if ( cued_remove_index == 6 ) {
-
-            index =
-                    real_time_destination_model->
-                    indexFromItem( sender->model_list.first() ).row();
-            printf ( "slot remove from destination table %d\n", index );
-            real_time_destination_model->takeRow( index );
-            sender->is_destination = false;
-
-        }
-
-        if ( cued_add_action_index == 2 ) {
-
-            real_time_source_model->
-                appendRow( sender->model_list );
-            sender->is_source = true;
-
-        } else if ( cued_add_action_index == 4 ) {
-
-            real_time_destination_model->
-                appendRow( sender->model_list );
-            sender->is_destination = true;
-
-        }
-        */
 
     }
+
+}
+
+void Form::updatePressedNode( Node* reference ) {
+
+        printf( "form says -> pressed node %s\n", reference->name );
+        this->active_node_name = reference->name;
+
+}
+
+void Form::updateReleasedNode( Node* reference ) {
+
+    int i;
+
+    if ( this->active_node_name == reference->name ) {
+
+        printf( "form says -> released node %s\n", reference->name );
+
+        if ( selection_mode_toggle->currentIndex() == 0 &&
+             reference->is_source ) {
+
+            i = source_model->
+                    indexFromItem( reference->
+                                   source_model_list.first() ).row();
+            source_model->takeRow( i );
+            //reference->setSelected( false );
+            reference->is_source = false;
+            reference->conflict_flag = 0;
+
+        } else if ( selection_mode_toggle->currentIndex() == 1 &&
+                    reference->is_destination ) {
+
+            i = destination_model->
+                    indexFromItem( reference->
+                                   destination_model_list.first() ).row();
+            destination_model->takeRow( i );
+            //makereference->setSelected( false );
+            reference->is_destination = false;
+            reference->conflict_flag = 0;
+
+        } else if ( selection_mode_toggle->currentIndex() == 0 &&
+                    !reference->is_source ) {
+
+            source_model->
+                appendRow( reference->source_model_list );
+            reference->is_source = true;
+            reference->conflict_flag = -1;
+
+        } else if ( selection_mode_toggle->currentIndex() == 1 &&
+                    !reference->is_destination ) {
+
+            destination_model->
+                appendRow( reference->destination_model_list );
+            reference->is_destination = true;
+            reference->conflict_flag = 1;
+
+        }
+
+    }
+
+    this->active_node_name = "";
 
 }
 
 void Form::updateSelectedNodes( bool is_selected ) {
 
     Node* sender = (Node*)(this->sender());
-    int index;
 
-    if ( selection_mode_toggle->currentIndex() == 0 && is_selected ) {
+    if ( this->active_node_name != "" ) {
 
-        if ( sender->is_destination ) {
+        return;
 
-            //cued_remove_action_index = 1;
-            /*
-            index =
-                    real_time_destination_model->
-                    indexFromItem( sender->model_list.first() ).row();
-            printf ( "slot remove from destination table %d\n", index );
-            real_time_destination_model->takeRow( index );
-            sender->is_destination = false;
-            */
+    }
 
-        } /*else {
+    printf( "form says -> node selected\n" );
 
-            cued_remove_action_index = 0;
-
-        }*/
-
-        printf ( "slot add to source table %d\n",
-                 source_model->rowCount() );
-
-        if ( !sender->is_source ) {
-
-            //cued_add_action_index = 2;
+    if ( selection_mode_toggle->currentIndex() == 0 &&
+         is_selected &&
+         !sender->is_source ) {
 
             source_model->
                 appendRow( sender->source_model_list );
             sender->is_source = true;
             sender->conflict_flag = -1;
 
-        } /*else {
+    } else if ( selection_mode_toggle->currentIndex() == 1 &&
+                is_selected &&
+                !sender->is_destination ) {
 
-            cued_add_action_index = 0;
-
-        }*/
-
-    } else if ( selection_mode_toggle->currentIndex() == 1 && is_selected ) {
-
-        if ( sender->is_source ) {
-
-            //cued_remove_action_index = 3;
-            /*
-            index =
-                    real_time_source_model->
-                    indexFromItem( sender->model_list.first() ).row();
-            printf ( "slot remove from source table %d\n", index );
-            real_time_source_model->takeRow( index );
-            sender->is_source = false;
-            */
-
-        } /*else {
-
-            cued_remove_action_index = 0;
-
-        }*/
-
-        printf ( "slot add to destination table %d\n",
-                 destination_model->rowCount() );
-
-        if ( !sender->is_destination ) {
-
-            //cued_add_action_index = 4;
             destination_model->
                 appendRow( sender->destination_model_list );
             sender->is_destination = true;
             sender->conflict_flag = 1;
 
-        } /*else {
-
-            cued_add_action_index = 0;
-
-        }*/
-
-    } /*else if ( selection_mode_toggle->currentIndex() == 0 && !is_selected ) {
-
-        if ( sender->is_source ) {
-
-            //cued_remove_action_index = 5;
-            //cued_add_action_index = 0;
-
-            index =
-                    source_model->
-                    indexFromItem(
-                            sender->source_model_list.first() ).row();
-            printf ( "slot remove from source table %d\n", index );
-            source_model->takeRow( index );
-            sender->is_source = false;
-
-        }
-
-    } else if ( selection_mode_toggle->currentIndex() == 1 && !is_selected ) {
-
-        if ( sender->is_destination ) {
-
-            //cued_remove_action_index = 6;
-            //cued_add_action_index = 0;
-
-            index =
-                    destination_model->
-                    indexFromItem(
-                            sender->destination_model_list.first() ).row();
-            printf ( "slot remove from destination table %d\n", index );
-            destination_model->takeRow( index );
-            sender->is_destination = false;
-
-        }
-
-    }*/
+    }
 
     if ( !sender->is_source || !sender->is_destination ) {
 
@@ -387,6 +310,15 @@ void Form::addNewDevice( const char* name ) {
                          SIGNAL(selectionStateChanged(bool)),
                          this,
                          SLOT(updateSelectedNodes(bool)) );
+
+    QObject::connect( this->node_pointer_list.back(),
+                      SIGNAL(nodePressed(Node*)),
+                      this,
+                      SLOT(updatePressedNode(Node*)));
+    QObject::connect( this->node_pointer_list.back(),
+                      SIGNAL(nodeReleased(Node*)),
+                      this,
+                      SLOT(updateReleasedNode(Node*)));
 
     default_y += 70;
     if ( default_y >= 400 ) {

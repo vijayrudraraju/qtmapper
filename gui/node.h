@@ -18,11 +18,11 @@ class Node : public QObject, public QGraphicsItem
     Q_INTERFACES( QGraphicsItem )
 
 public:
-    Node(QGraphicsView *graphWidget);
+    Node(QGraphicsView* graphWidget);
     ~Node();
 
-    void addEdge(Edge *edge);
-    QList<Edge *> edges() const;
+    void addEdge(Edge* edge);
+    QList<Edge*> edges() const;
 
     enum { Type = UserType + 1 };
     int type() const { return Type; }
@@ -32,9 +32,9 @@ public:
 
     QRectF boundingRect() const;
     QPainterPath shape() const;
-    void paint(QPainter *painter,
-               const QStyleOptionGraphicsItem *option,
-               QWidget *widget);
+    void paint(QPainter* painter,
+               const QStyleOptionGraphicsItem* option,
+               QWidget* widget);
 
     void setName( const char* new_name );
 
@@ -43,15 +43,19 @@ public:
     bool is_source;
     bool is_destination;
     int conflict_flag; //-1 => source, 0 => no confict, 1 => destination
+    const char* name;
 
 signals:
     void selectionStateChanged( bool is_selected );
 
+    void nodePressed( Node* reference );
+    void nodeReleased( Node* reference );
+
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
-    //void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    //void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent* event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
 private:
     QList<Edge *> edgeList;
@@ -59,7 +63,6 @@ private:
     QGraphicsView *graph;
 
     QGraphicsSimpleTextItem name_item;
-    const char* name;
 
 };
 
