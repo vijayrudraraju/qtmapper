@@ -60,7 +60,10 @@ void dbCallbackFunction( mapper_db_device record,
 
     if ( action == MDB_NEW ) {
 
-        form->addNewDevice( record->name );
+        form->addNewDevice( record->name,
+                            record->host,
+                            record->port,
+                            record->canAlias );
 
     }
 

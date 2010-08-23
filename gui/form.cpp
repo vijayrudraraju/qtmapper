@@ -4,7 +4,8 @@
 #include <QGraphicsScene>
 #include <QWheelEvent>
 
-#include <math.h>
+#include <cmath>
+#include <sstream>
 
 Form::Form( QWidget *parent ) :
     QWidget( parent ) {
@@ -45,6 +46,8 @@ Form::Form( QWidget *parent ) :
     destination_list->setModel( destination_model );
     destination_signal_list->setModel( destination_model );
     destination_list->setMinimumSize( 600, 300 );
+
+    this->active_node_name = "";
 
     connect( selection_mode_toggle, SIGNAL(currentChanged(int)),
              this, SLOT(updateSelectionMode(int)) );
@@ -268,7 +271,13 @@ void Form::setMapperDevice( mapper_device device ) {
 
 }
 
-void Form::addNewDevice( const char* name ) {
+void Form::addNewDevice( const char* name,
+                         const char* host,
+                         int port,
+                         int can_alias ) {
+
+    std::string temp_string;
+    std::stringstream out;
 
     printf( "addNewDevice(  ) %d %d \n", default_x, default_y );
 
@@ -282,9 +291,12 @@ void Form::addNewDevice( const char* name ) {
     QStandardItem* item_3 = new QStandardItem;
     QStandardItem* item_4 = new QStandardItem;
     item_1->setText( name );
-    item_2->setText( "0" );
-    item_3->setText( "10" );
-    item_4->setText( "121" );
+    item_2->setText( host );
+    out << port;
+    item_3->setText( out.str().c_str() );
+    out.str( "" );
+    out << can_alias;
+    item_4->setText( out.str().c_str() );
     this->node_pointer_list.back()->source_model_list
             << item_1 << item_2 << item_3 << item_4;
 
@@ -293,9 +305,13 @@ void Form::addNewDevice( const char* name ) {
     QStandardItem* destination_item_3 = new QStandardItem;
     QStandardItem* destination_item_4 = new QStandardItem;
     destination_item_1->setText( name );
-    destination_item_2->setText( "20" );
-    destination_item_3->setText( "210" );
-    destination_item_4->setText( "2121" );
+    destination_item_2->setText( host );
+    out.str( "" );
+    out << port;
+    destination_item_3->setText( out.str().c_str() );
+    out.str( "" );
+    out << can_alias;
+    destination_item_4->setText( out.str().c_str() );
     this->node_pointer_list.back()->destination_model_list
             << destination_item_1
             << destination_item_2

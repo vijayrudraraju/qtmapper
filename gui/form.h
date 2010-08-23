@@ -25,7 +25,10 @@ public:
     void addNode();
 
     //int (*createTestDeviceFunction)();
-    void addNewDevice( const char* name );
+    void addNewDevice( const char* name,
+                       const char* host,
+                       int port,
+                       int can_alias );
     void addDbCallbackFunction( device_callback_func* f );
     void setMapperDevice( mapper_device device );
 
