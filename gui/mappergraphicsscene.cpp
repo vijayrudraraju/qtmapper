@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "mappergraphicsscene.h"
 
 MapperGraphicsScene::MapperGraphicsScene(QObject *parent) :

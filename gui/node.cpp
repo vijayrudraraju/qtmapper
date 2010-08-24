@@ -4,6 +4,8 @@
 #include <QPainter>
 #include <QStyleOption>
 
+#include <cstdio>
+
 #include "edge.h"
 #include "node.h"
 
