@@ -29,12 +29,16 @@ public:
                        const char* host,
                        int port,
                        int can_alias );
+    void addNewSignal( mapper_db_signal record );
+    void addNewMapping( mapper_db_mapping record );
+
     void addDbDeviceCallbackFunction( device_callback_func* f );
     void addDbSignalCallbackFunction( signal_callback_func* f );
+    void addDbLinkCallbackFunction( link_callback_func* f );
+    void addDbMappingCallbackFunction( mapping_callback_func* f );
     void setMapperDevice( mapper_device device );
 
     static bool IsNameMatch( Node* i );
-    void addNewSignal( mapper_db_signal record );
     static const char* device_search_term;
 
 public slots:
@@ -63,6 +67,8 @@ private:
     QTimer* timer;
     device_callback_func* db_device_callback_function;
     signal_callback_func* db_signal_callback_function;
+    link_callback_func* db_link_callback_function;
+    mapping_callback_func* db_mapping_callback_function;
     mapper_device qtmapper;
 
     QStandardItemModel* source_model;

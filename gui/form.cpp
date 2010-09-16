@@ -32,13 +32,13 @@ Form::Form( QWidget *parent ) :
             setViewportUpdateMode( QGraphicsView::BoundingRectViewportUpdate );
     graphics_view->
             setRenderHint( QPainter::Antialiasing );
-    //graphicsView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    //graphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     graphics_view->scale( qreal(0.7), qreal(0.7) );
     graphics_view->setMinimumSize( 600, 300 );
 
     QStringList header_labels;
     header_labels << "name" << "host" << "port" << "can alias?";
+    QStringList header_edit_labels;
+    header_edit_labels << "name" << "type" << "length" << "other";
 
     source_model = new QStandardItemModel( 0, 4 );
     source_model->setHorizontalHeaderLabels( header_labels );
@@ -46,18 +46,12 @@ Form::Form( QWidget *parent ) :
     source_list->setMinimumSize( 600, 300 );
 
     destination_model = new QStandardItemModel( 0, 4 );
-        destination_model->setHorizontalHeaderLabels( header_labels );
-        destination_list->setModel( destination_model );
-        destination_list->setMinimumSize( 600, 300 );
+    destination_model->setHorizontalHeaderLabels( header_labels );
+    destination_list->setModel( destination_model );
+    destination_list->setMinimumSize( 600, 300 );
 
     source_signal_list->setModel( source_model );
-        source_signal_list->setColumnHidden( 1, true );
-        source_signal_list->setColumnHidden( 2, true );
-        source_signal_list->setColumnHidden( 3, true );
     destination_signal_list->setModel( destination_model );
-        destination_signal_list->setColumnHidden( 1, true );
-        destination_signal_list->setColumnHidden( 2, true );
-        destination_signal_list->setColumnHidden( 3, true );
 
     this->active_node_name = "";
 
@@ -85,7 +79,7 @@ void Form::update(  ) {
 
 void Form::updateMouseState( bool is_pressed ) {
 
-    printf( "form says -> mouse state %d\n", is_pressed );
+    //printf( "form says -> mouse state %d\n", is_pressed );
     mouse_is_pressed = is_pressed;
 
     int index;
@@ -103,6 +97,7 @@ void Form::updateMouseState( bool is_pressed ) {
                         indexFromItem( (*it)->
                                        destination_model_list.first() ).row();
                 destination_model->takeRow( index );
+
                 (*it)->is_destination = false;
                 (*it)->is_source = true;
                 (*it)->conflict_flag = 0;
@@ -114,6 +109,7 @@ void Form::updateMouseState( bool is_pressed ) {
                         indexFromItem( (*it)->
                                        source_model_list.first() ).row();
                 source_model->takeRow( index );
+
                 (*it)->is_destination = true;
                 (*it)->is_source = false;
                 (*it)->conflict_flag = 0;
@@ -138,6 +134,7 @@ void Form::updatePressedNode( Node* reference ) {
 void Form::updateReleasedNode( Node* reference ) {
 
     int i;
+    QModelIndex dummy_index;
 
     if ( this->active_node_name == reference->name ) {
 
@@ -150,7 +147,7 @@ void Form::updateReleasedNode( Node* reference ) {
                     indexFromItem( reference->
                                    source_model_list.first() ).row();
             source_model->takeRow( i );
-            //reference->setSelected( false );
+
             reference->is_source = false;
             reference->conflict_flag = 0;
 
@@ -161,7 +158,7 @@ void Form::updateReleasedNode( Node* reference ) {
                     indexFromItem( reference->
                                    destination_model_list.first() ).row();
             destination_model->takeRow( i );
-            //makereference->setSelected( false );
+
             reference->is_destination = false;
             reference->conflict_flag = 0;
 
@@ -170,6 +167,11 @@ void Form::updateReleasedNode( Node* reference ) {
 
             source_model->
                 appendRow( reference->source_model_list );
+
+            source_signal_list->
+                setFirstColumnSpanned( source_model->rowCount()-1,
+                                       dummy_index, true );
+
             reference->is_source = true;
             reference->conflict_flag = -1;
 
@@ -178,6 +180,11 @@ void Form::updateReleasedNode( Node* reference ) {
 
             destination_model->
                 appendRow( reference->destination_model_list );
+
+            destination_signal_list->
+                setFirstColumnSpanned( destination_model->rowCount()-1,
+                                       dummy_index, true );
+
             reference->is_destination = true;
             reference->conflict_flag = 1;
 
@@ -192,6 +199,7 @@ void Form::updateReleasedNode( Node* reference ) {
 void Form::updateSelectedNodes( bool is_selected ) {
 
     Node* sender = (Node*)(this->sender());
+    QModelIndex dummy_index;
 
     if ( strcmp( this->active_node_name, "" ) ) {
 
@@ -207,6 +215,11 @@ void Form::updateSelectedNodes( bool is_selected ) {
 
             source_model->
                 appendRow( sender->source_model_list );
+
+            source_signal_list->
+                setFirstColumnSpanned( source_model->rowCount()-1,
+                                       dummy_index, true );
+
             sender->is_source = true;
             sender->conflict_flag = -1;
 
@@ -216,6 +229,11 @@ void Form::updateSelectedNodes( bool is_selected ) {
 
             destination_model->
                 appendRow( sender->destination_model_list );
+
+            destination_signal_list->
+                setFirstColumnSpanned( destination_model->rowCount()-1,
+                                       dummy_index, true );
+
             sender->is_destination = true;
             sender->conflict_flag = 1;
 
@@ -256,6 +274,28 @@ void Form::addDbSignalCallbackFunction( signal_callback_func* f ) {
 
 }
 
+void Form::addDbLinkCallbackFunction( link_callback_func* f ) {
+
+    printf( "add db_link callback function\n" );
+    mapper_db_remove_link_callback(
+            this->db_link_callback_function, (void*) 0 );
+    this->db_link_callback_function = f;
+    mapper_db_add_link_callback(
+            this->db_link_callback_function, (void*) 0 );
+
+}
+
+void Form::addDbMappingCallbackFunction( mapping_callback_func* f ) {
+
+    printf( "add db_mapping callback function\n" );
+    mapper_db_remove_mapping_callback(
+            this->db_mapping_callback_function, (void*) 0 );
+    this->db_mapping_callback_function = f;
+    mapper_db_add_mapping_callback(
+            this->db_mapping_callback_function, (void*) 0 );
+
+}
+
 void Form::setMapperDevice( mapper_device device ) {
 
     this->qtmapper = device;
@@ -281,9 +321,39 @@ void Form::addNewSignal( mapper_db_signal record ) {
 
     printf( "vijay found %s\n", (*it)->name );
 
-    QStandardItem* item_1_child = new QStandardItem;
-    item_1_child->setText( record->name );
-    (*it)->source_model_list[0]->setChild( 0, 0, item_1_child );
+    std::stringstream out;
+    (*it)->source_model_list[0]->setColumnCount( 3 );
+        (*it)->source_model_list[0]->setColumnCount( 3 );
+
+    QStandardItem* source_item_1_child = new QStandardItem;
+    source_item_1_child->setText( record->name );
+    (*it)->source_model_list[0]->setChild( 0, 0, source_item_1_child );
+    QStandardItem* destination_item_1_child = new QStandardItem;
+    destination_item_1_child->setText( record->name );
+    (*it)->destination_model_list[0]->setChild( 0,
+                                                0,
+                                                destination_item_1_child );
+
+    QStandardItem* source_item_2_child = new QStandardItem;
+    out << record->type;
+    source_item_2_child->setText( out.str().c_str() );
+    (*it)->source_model_list[0]->setChild( 0, 1, source_item_2_child );
+    QStandardItem* destination_item_2_child = new QStandardItem;
+    destination_item_2_child->setText( out.str().c_str() );
+    (*it)->destination_model_list[0]->setChild( 0,
+                                                1,
+                                                destination_item_2_child );
+
+    QStandardItem* source_item_3_child = new QStandardItem;
+    out.str( "" );
+    out << record->length;
+    source_item_3_child->setText( out.str().c_str() );
+    QStandardItem* destination_item_3_child = new QStandardItem;
+    destination_item_3_child->setText( out.str().c_str() );
+    (*it)->source_model_list[0]->setChild( 0, 2, source_item_3_child );
+    (*it)->destination_model_list[0]->setChild( 0,
+                                                2,
+                                                destination_item_3_child );
 
 }
 
@@ -302,19 +372,22 @@ void Form::addNewDevice( const char* name,
     scene->addItem(this->node_pointer_list.back());
     this->node_pointer_list.back()->setPos( default_x, default_y );
 
-    QStandardItem* item_1 = new QStandardItem;
-    QStandardItem* item_2 = new QStandardItem;
-    QStandardItem* item_3 = new QStandardItem;
-    QStandardItem* item_4 = new QStandardItem;
-    item_1->setText( name );
-    item_2->setText( host );
+    QStandardItem* source_item_1 = new QStandardItem;
+    QStandardItem* source_item_2 = new QStandardItem;
+    QStandardItem* source_item_3 = new QStandardItem;
+    QStandardItem* source_item_4 = new QStandardItem;
+    source_item_1->setText( name );
+    source_item_2->setText( host );
     out << port;
-    item_3->setText( out.str().c_str() );
+    source_item_3->setText( out.str().c_str() );
     out.str( "" );
     out << can_alias;
-    item_4->setText( out.str().c_str() );
+    source_item_4->setText( out.str().c_str() );
     this->node_pointer_list.back()->source_model_list
-            << item_1 << item_2 << item_3 << item_4;
+            << source_item_1
+            << source_item_2
+            << source_item_3
+            << source_item_4;
 
     QStandardItem* destination_item_1 = new QStandardItem;
     QStandardItem* destination_item_2 = new QStandardItem;

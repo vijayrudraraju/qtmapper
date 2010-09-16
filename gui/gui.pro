@@ -12,10 +12,12 @@ HEADERS += form.h \
 node.h \
 edge.h \
     mappergraphicsview.h \
-    mappergraphicsscene.h
+    mappergraphicsscene.h \
+    link.h
 
 SOURCES += form.cpp \
 node.cpp \
 edge.cpp \
     mappergraphicsview.cpp \
-    mappergraphicsscene.cpp
+    mappergraphicsscene.cpp \
+    link.cpp

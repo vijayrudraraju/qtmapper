@@ -85,6 +85,29 @@ void dbSignalCallbackFunction( mapper_db_signal record,
 
 }
 
+void dbLinkCallbackFunction( mapper_db_link record,
+                                mapper_db_action_t action,
+                                void* user ) {
+
+    printf( "Form::db_link_callback_function( ... )\n" );
+    printf( "record->src %s record->dest %s action %d user %p \n",
+            record->src_name, record->dest_name, action, user );
+
+}
+
+void dbMappingCallbackFunction( mapper_db_mapping record,
+                                mapper_db_action_t action,
+                                void* user ) {
+
+    printf( "Form::db_mapping_callback_function( ... )\n" );
+    printf( "record->src %s record->dest %s action %d user %p \n",
+            record->src_name, record->dest_name, action, user );
+    if ( action == 1 ) {
+        form->addNewMapping( record );
+    }
+
+}
+
 const char* Form::device_search_term = "";
 
 int main( int argc, char *argv[] ) {
@@ -104,6 +127,8 @@ int main( int argc, char *argv[] ) {
 
     form->addDbDeviceCallbackFunction( dbDeviceCallbackFunction );
     form->addDbSignalCallbackFunction( dbSignalCallbackFunction );
+    form->addDbLinkCallbackFunction( dbLinkCallbackFunction );
+    form->addDbMappingCallbackFunction( dbMappingCallbackFunction );
 
     form->show();
 
