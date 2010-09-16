@@ -50,11 +50,11 @@ void cleanup_qtmapper(  ) {
 
 Form* form;
 
-void dbCallbackFunction( mapper_db_device record,
+void dbDeviceCallbackFunction( mapper_db_device record,
                                 mapper_db_action_t action,
                                 void* user ) {
 
-    printf( "Form::db_callback_function( ... )\n" );
+    printf( "Form::db_device_callback_function( ... )\n" );
     printf( "record->name %s action %d user %p \n",
             record->name, action, user );
 
@@ -64,10 +64,28 @@ void dbCallbackFunction( mapper_db_device record,
                             record->host,
                             record->port,
                             record->canAlias );
+        mdev_request_signals_by_name( record->name, qtmapper );
+        mdev_request_links_by_name( record->name, qtmapper );
+        mdev_request_mappings_by_name( record->name, qtmapper );
 
     }
 
 }
+
+void dbSignalCallbackFunction( mapper_db_signal record,
+                                mapper_db_action_t action,
+                                void* user ) {
+
+    printf( "Form::db_signal_callback_function( ... )\n" );
+    printf( "record->name %s action %d user %p \n",
+            record->name, action, user );
+    if ( action == 1 ) {
+        form->addNewSignal( record );
+    }
+
+}
+
+const char* Form::device_search_term = "";
 
 int main( int argc, char *argv[] ) {
 
@@ -83,7 +101,10 @@ int main( int argc, char *argv[] ) {
 
     form = new Form(  );
     form->setMapperDevice( qtmapper );
-    form->addDbCallbackFunction( dbCallbackFunction );
+
+    form->addDbDeviceCallbackFunction( dbDeviceCallbackFunction );
+    form->addDbSignalCallbackFunction( dbSignalCallbackFunction );
+
     form->show();
 
     app.exec();

@@ -37,15 +37,27 @@ Form::Form( QWidget *parent ) :
     graphics_view->scale( qreal(0.7), qreal(0.7) );
     graphics_view->setMinimumSize( 600, 300 );
 
+    QStringList header_labels;
+    header_labels << "name" << "host" << "port" << "can alias?";
+
     source_model = new QStandardItemModel( 0, 4 );
+    source_model->setHorizontalHeaderLabels( header_labels );
     source_list->setModel( source_model );
-    source_signal_list->setModel( source_model );
     source_list->setMinimumSize( 600, 300 );
 
     destination_model = new QStandardItemModel( 0, 4 );
-    destination_list->setModel( destination_model );
+        destination_model->setHorizontalHeaderLabels( header_labels );
+        destination_list->setModel( destination_model );
+        destination_list->setMinimumSize( 600, 300 );
+
+    source_signal_list->setModel( source_model );
+        source_signal_list->setColumnHidden( 1, true );
+        source_signal_list->setColumnHidden( 2, true );
+        source_signal_list->setColumnHidden( 3, true );
     destination_signal_list->setModel( destination_model );
-    destination_list->setMinimumSize( 600, 300 );
+        destination_signal_list->setColumnHidden( 1, true );
+        destination_signal_list->setColumnHidden( 2, true );
+        destination_signal_list->setColumnHidden( 3, true );
 
     this->active_node_name = "";
 
@@ -55,40 +67,6 @@ Form::Form( QWidget *parent ) :
              this, SLOT(updateMouseState(bool)) );
 
     setWindowTitle( tr("Mapper GUI") );
-
-    //Node *node1 = new Node(graphicsView);
-    //Node *node2 = new Node(graphicsView);
-    //Node *node3 = new Node(graphicsView);
-    //Node *node4 = new Node(graphicsView);
-    //centerNode = new Node(graphicsView);
-    //Node *node6 = new Node(graphicsView);
-    //Node *node7 = new Node(graphicsView);
-    //Node *node8 = new Node(graphicsView);
-    //Node *node9 = new Node(graphicsView);
-    //scene->addItem(node1);
-    //scene->addItem(node2);
-    //scene->addItem(node3);
-    //scene->addItem(node4);
-    //scene->addItem(centerNode);
-    //scene->addItem(node6);
-    //scene->addItem(node7);
-    //scene->addItem(node8);
-    //scene->addItem(node9);
-
-    /*
-    scene->addItem(new Edge(node1, node2));
-    scene->addItem(new Edge(node2, node3));
-    scene->addItem(new Edge(node2, centerNode));
-    scene->addItem(new Edge(node3, node6));
-    scene->addItem(new Edge(node4, node1));
-    scene->addItem(new Edge(node4, centerNode));
-    scene->addItem(new Edge(centerNode, node6));
-    scene->addItem(new Edge(centerNode, node8));
-    scene->addItem(new Edge(node6, node9));
-    scene->addItem(new Edge(node7, node4));
-    scene->addItem(new Edge(node8, node7));
-    scene->addItem(new Edge(node9, node8));
-    */
 
 }
 
@@ -215,7 +193,7 @@ void Form::updateSelectedNodes( bool is_selected ) {
 
     Node* sender = (Node*)(this->sender());
 
-    if ( this->active_node_name != "" ) {
+    if ( strcmp( this->active_node_name, "" ) ) {
 
         return;
 
@@ -257,17 +235,55 @@ void Form::updateSelectionMode( int index ) {
 
 }
 
-void Form::addDbCallbackFunction( device_callback_func* f ) {
+void Form::addDbDeviceCallbackFunction( device_callback_func* f ) {
 
-    mapper_db_remove_device_callback( this->db_callback_function, (void*) 0 );
-    this->db_callback_function = f;
-    mapper_db_add_device_callback( this->db_callback_function, (void*) 0 );
+    mapper_db_remove_device_callback(
+            this->db_device_callback_function, (void*) 0 );
+    this->db_device_callback_function = f;
+    mapper_db_add_device_callback(
+            this->db_device_callback_function, (void*) 0 );
+
+}
+
+void Form::addDbSignalCallbackFunction( signal_callback_func* f ) {
+
+    printf( "add signal callback function\n" );
+    mapper_db_remove_signal_callback(
+            this->db_signal_callback_function, (void*) 0 );
+    this->db_signal_callback_function = f;
+    mapper_db_add_signal_callback(
+            this->db_signal_callback_function, (void*) 0 );
 
 }
 
 void Form::setMapperDevice( mapper_device device ) {
 
     this->qtmapper = device;
+
+}
+
+bool Form::IsNameMatch( Node* i ) {
+
+    return !strcmp( i->name, device_search_term );
+
+}
+
+void Form::addNewSignal( mapper_db_signal record ) {
+
+    std::list<Node*>::iterator it;
+
+    printf( "vijay searching for %s\n", record->device_name );
+    Form::device_search_term = record->device_name;
+
+    it = std::find_if( this->node_pointer_list.begin(),
+                        this->node_pointer_list.end(),
+                        IsNameMatch );
+
+    printf( "vijay found %s\n", (*it)->name );
+
+    QStandardItem* item_1_child = new QStandardItem;
+    item_1_child->setText( record->name );
+    (*it)->source_model_list[0]->setChild( 0, 0, item_1_child );
 
 }
 
@@ -351,60 +367,3 @@ void Form::itemMoved()
     if (!timerId)
         timerId = startTimer(1000 / 25);
 }
-
-/*
-void Form::scaleView(qreal scaleFactor)
-{
-    qreal factor =
-            graphicsView->matrix().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width();
-    if (factor < 0.07 || factor > 100)
-        return;
-
-    graphicsView->scale(scaleFactor, scaleFactor);
-}
-*/
-
-/*
-void Form::wheelEvent(QWheelEvent *event) {
-
-    //scaleView(pow((double)2, -event->delta() / 240.0));
-    //event->accept();
-}
-*/
-
-/*
-void Form::viewportEvent( QEvent* event ) {
-
-    //event->accept();
-
-}
-*/
-
-/*
-void Form::keyPressEvent(QKeyEvent *event)
-{
-    switch (event->key()) {
-    case Qt::Key_Up:
-        //centerNode->moveBy(0, -20);
-        break;
-    case Qt::Key_Down:
-        //centerNode->moveBy(0, 20);
-        break;
-    case Qt::Key_Left:
-        //centerNode->moveBy(-20, 0);
-        break;
-    case Qt::Key_Right:
-        //centerNode->moveBy(20, 0);
-        break;
-    case Qt::Key_Plus:
-        scaleView(qreal(1.2));
-        break;
-    case Qt::Key_Minus:
-        scaleView(1 / qreal(1.2));
-        break;
-
-    default:
-        QWidget::keyPressEvent(event);
-    }
-}
-*/

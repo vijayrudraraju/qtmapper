@@ -6,7 +6,7 @@
 #include <QTimer>
 #include <QStandardItemModel>
 
-#include <mapper/mapper.h>
+#include <mapper/mapper.h>>
 
 #include "ui_form.h"
 #include "edge.h"
@@ -29,8 +29,13 @@ public:
                        const char* host,
                        int port,
                        int can_alias );
-    void addDbCallbackFunction( device_callback_func* f );
+    void addDbDeviceCallbackFunction( device_callback_func* f );
+    void addDbSignalCallbackFunction( signal_callback_func* f );
     void setMapperDevice( mapper_device device );
+
+    static bool IsNameMatch( Node* i );
+    void addNewSignal( mapper_db_signal record );
+    static const char* device_search_term;
 
 public slots:
     void update();
@@ -56,7 +61,8 @@ private:
     MapperGraphicsScene* scene;
 
     QTimer* timer;
-    device_callback_func* db_callback_function;
+    device_callback_func* db_device_callback_function;
+    signal_callback_func* db_signal_callback_function;
     mapper_device qtmapper;
 
     QStandardItemModel* source_model;
