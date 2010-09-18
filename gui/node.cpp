@@ -40,18 +40,19 @@ void Node::setName( const char* new_name ) {
 
 }
 
-void Node::addEdge(Edge *edge) {
+void Node::addMapping(Node* destination) {
 
-    edgeList << edge;
-    edge->adjust();
+    this->destination_list.push_back( destination );
 
 }
 
+/*
 QList<Edge *> Node::edges() const {
 
     return edgeList;
 
 }
+*/
 
 /*
 void Node::calculateForces() {

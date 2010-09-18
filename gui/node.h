@@ -8,7 +8,7 @@
 
 //#include <mapper/mapper.h>
 
-class Edge;
+class Link;
 class Form;
 
 class Node : public QObject, public QGraphicsItem
@@ -21,8 +21,7 @@ public:
     Node(QGraphicsView* graphWidget);
     ~Node();
 
-    void addEdge(Edge* edge);
-    QList<Edge*> edges() const;
+    //QList<Edge*> edges() const;
 
     enum { Type = UserType + 1 };
     int type() const { return Type; }
@@ -40,6 +39,9 @@ public:
 
     QList<QStandardItem*> source_model_list;
     QList<QStandardItem*> destination_model_list;
+
+    void addMapping(Node* destination);
+
     bool is_source;
     bool is_destination;
     int conflict_flag; //-1 => source, 0 => no confict, 1 => destination
@@ -58,7 +60,9 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
 private:
-    QList<Edge *> edgeList;
+    //QList<Link*> linkList;
+    std::list<Node*> destination_list;
+
     QPointF newPos;
     QGraphicsView *graph;
 

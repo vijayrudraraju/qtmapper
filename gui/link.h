@@ -7,8 +7,8 @@ class Link
 {
 
 public:
-    Edge(Node *sourceNode, Node *destNode);
-    ~Edge();
+    Link( Node *sourceNode, Node *destNode );
+    ~Link(  );
 
 private:
     Node *source, *dest;

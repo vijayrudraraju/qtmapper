@@ -39,7 +39,10 @@ public:
     void setMapperDevice( mapper_device device );
 
     static bool IsNameMatch( Node* i );
+
     static const char* device_search_term;
+    //static const char* source_search_term;
+    //static const char* destination_search_term;
 
 public slots:
     void update();

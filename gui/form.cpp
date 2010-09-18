@@ -308,39 +308,83 @@ bool Form::IsNameMatch( Node* i ) {
 
 }
 
+void Form::addNewMapping( mapper_db_mapping record ) {
+
+    std::list<Node*>::iterator source_it;
+    std::list<Node*>::iterator destination_it;
+
+    QString str = record->src_name;
+    QStringList parsed_str = str.split( "/", QString::SkipEmptyParts );
+
+    QString str_2 = record->dest_name;
+    QStringList parsed_str_2 = str_2.split( "/", QString::SkipEmptyParts );
+
+    printf( "vijay searching for %s with %s to add mapping to...\n",
+            parsed_str[0].toLatin1().constData(),
+            parsed_str[1].toLatin1().constData() );
+    printf( "%s with %s\n",
+            parsed_str_2[0].toLatin1().constData(),
+            parsed_str_2[1].toLatin1().constData() );
+
+    parsed_str[0].prepend("/");
+    parsed_str_2[0].prepend("/");
+
+    Form::device_search_term =
+            parsed_str[0].toLatin1().constData();
+    source_it = std::find_if( this->node_pointer_list.begin(),
+                        this->node_pointer_list.end(),
+                        IsNameMatch );
+    Form::device_search_term =
+            parsed_str_2[0].toLatin1().constData();
+    destination_it = std::find_if( this->node_pointer_list.begin(),
+                        this->node_pointer_list.end(),
+                        IsNameMatch );
+
+    (*source_it)->addMapping( *destination_it );
+
+}
+
 void Form::addNewSignal( mapper_db_signal record ) {
 
     std::list<Node*>::iterator it;
 
-    printf( "vijay searching for %s\n", record->device_name );
+    printf( "vijay searching for %s to add signal\n",
+            record->device_name );
     Form::device_search_term = record->device_name;
 
     it = std::find_if( this->node_pointer_list.begin(),
                         this->node_pointer_list.end(),
                         IsNameMatch );
 
-    printf( "vijay found %s\n", (*it)->name );
+    printf( "vijay found %s with %d rows\n",
+            (*it)->name,
+            (*it)->source_model_list[0]->rowCount() );
 
     std::stringstream out;
-    (*it)->source_model_list[0]->setColumnCount( 3 );
-        (*it)->source_model_list[0]->setColumnCount( 3 );
+    //(*it)->source_model_list[0]->setColumnCount( 3 );
+
+    int row_count_before_add = (*it)->source_model_list[0]->rowCount();
 
     QStandardItem* source_item_1_child = new QStandardItem;
     source_item_1_child->setText( record->name );
-    (*it)->source_model_list[0]->setChild( 0, 0, source_item_1_child );
+    (*it)->source_model_list[0]->setChild( row_count_before_add,
+                                           0,
+                                           source_item_1_child );
     QStandardItem* destination_item_1_child = new QStandardItem;
     destination_item_1_child->setText( record->name );
-    (*it)->destination_model_list[0]->setChild( 0,
+    (*it)->destination_model_list[0]->setChild( row_count_before_add,
                                                 0,
                                                 destination_item_1_child );
 
     QStandardItem* source_item_2_child = new QStandardItem;
     out << record->type;
     source_item_2_child->setText( out.str().c_str() );
-    (*it)->source_model_list[0]->setChild( 0, 1, source_item_2_child );
+    (*it)->source_model_list[0]->setChild( row_count_before_add,
+                                           1,
+                                           source_item_2_child );
     QStandardItem* destination_item_2_child = new QStandardItem;
     destination_item_2_child->setText( out.str().c_str() );
-    (*it)->destination_model_list[0]->setChild( 0,
+    (*it)->destination_model_list[0]->setChild( row_count_before_add,
                                                 1,
                                                 destination_item_2_child );
 
@@ -348,10 +392,12 @@ void Form::addNewSignal( mapper_db_signal record ) {
     out.str( "" );
     out << record->length;
     source_item_3_child->setText( out.str().c_str() );
+    (*it)->source_model_list[0]->setChild( row_count_before_add,
+                                           2,
+                                           source_item_3_child );
     QStandardItem* destination_item_3_child = new QStandardItem;
     destination_item_3_child->setText( out.str().c_str() );
-    (*it)->source_model_list[0]->setChild( 0, 2, source_item_3_child );
-    (*it)->destination_model_list[0]->setChild( 0,
+    (*it)->destination_model_list[0]->setChild( row_count_before_add,
                                                 2,
                                                 destination_item_3_child );
 

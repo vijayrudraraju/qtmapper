@@ -1,5 +1,6 @@
 #include "link.h"
 
-Link::Link()
-{
+Link::Link( Node *sourceNode, Node *destNode ) {
+
+
 }
