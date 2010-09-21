@@ -58,7 +58,7 @@ Form::Form( QWidget *parent ) :
     connect( selection_mode_toggle, SIGNAL(currentChanged(int)),
              this, SLOT(updateSelectionMode(int)) );
     connect( graphics_view, SIGNAL(mouseStateChanged(bool)),
-             this, SLOT(updateMouseState(bool)) );
+            this, SLOT(updateMouseState(bool)) );
 
     setWindowTitle( tr("Mapper GUI") );
 
@@ -79,19 +79,25 @@ void Form::update(  ) {
 
 void Form::updateMouseState( bool is_pressed ) {
 
-    //printf( "form says -> mouse state %d\n", is_pressed );
+    printf( "form says -> mouse state %d\n", is_pressed );
     mouse_is_pressed = is_pressed;
 
     int index;
 
     if ( !mouse_is_pressed ) {
 
+        printf( "debug ping 2\n" );
+
         for ( std::list<Node*>::iterator it = node_pointer_list.begin();
                 it != node_pointer_list.end();
                 it++ ) {
 
+            printf( "debug ping 3\n" );
+
             if ( (*it)->conflict_flag == -1 ) {
 
+                printf( "debug ping 4\n" );
+                /*
                 index =
                         destination_model->
                         indexFromItem( (*it)->
@@ -99,20 +105,28 @@ void Form::updateMouseState( bool is_pressed ) {
                 destination_model->takeRow( index );
 
                 (*it)->is_destination = false;
-                (*it)->is_source = true;
                 (*it)->conflict_flag = 0;
+                */
+
+                (*it)->conflict_flag = 0;
+                this->removeNodeFromDestinationView( (*it) );
+                (*it)->is_source = true;
 
             } else if ( (*it)->conflict_flag == 1 ) {
 
+                /*
                 index =
                         source_model->
                         indexFromItem( (*it)->
                                        source_model_list.first() ).row();
                 source_model->takeRow( index );
-
-                (*it)->is_destination = true;
                 (*it)->is_source = false;
                 (*it)->conflict_flag = 0;
+                */
+
+                (*it)->conflict_flag = 0;
+                this->removeNodeFromSourceView( (*it) );
+                (*it)->is_destination = true;
 
             }
 
@@ -121,6 +135,55 @@ void Form::updateMouseState( bool is_pressed ) {
         }
 
     }
+
+}
+
+void Form::addNodeToDestinationView( Node* the_node ) {
+
+    QModelIndex dummy_index;
+    destination_model->
+        appendRow( the_node->destination_model_list );
+    destination_signal_list->
+        setFirstColumnSpanned( destination_model->rowCount()-1,
+                               dummy_index, true );
+    the_node->is_destination = true;
+    the_node->is_source = false;
+
+}
+
+void Form::removeNodeFromDestinationView( Node* the_node ) {
+
+    int i = destination_model->
+            indexFromItem( the_node->
+                           destination_model_list.first() ).row();
+    destination_model->takeRow( i );
+    the_node->is_destination = false;
+    the_node->update();
+
+}
+
+void Form::addNodeToSourceView( Node* the_node ) {
+
+    QModelIndex dummy_index;
+    source_model->
+        appendRow( the_node->source_model_list );
+    source_signal_list->
+        setFirstColumnSpanned( source_model->rowCount()-1,
+                               dummy_index, true );
+    the_node->is_source = true;
+    the_node->is_destination = false;
+    the_node->update();
+
+}
+
+void Form::removeNodeFromSourceView( Node* the_node ) {
+
+    int i = source_model->
+            indexFromItem( the_node->
+                           source_model_list.first() ).row();
+    source_model->takeRow( i );
+    the_node->is_source = false;
+    the_node->update();
 
 }
 
@@ -143,49 +206,25 @@ void Form::updateReleasedNode( Node* reference ) {
         if ( selection_mode_toggle->currentIndex() == 0 &&
              reference->is_source ) {
 
-            i = source_model->
-                    indexFromItem( reference->
-                                   source_model_list.first() ).row();
-            source_model->takeRow( i );
-
-            reference->is_source = false;
+            this->removeNodeFromSourceView( reference );
             reference->conflict_flag = 0;
 
         } else if ( selection_mode_toggle->currentIndex() == 1 &&
                     reference->is_destination ) {
 
-            i = destination_model->
-                    indexFromItem( reference->
-                                   destination_model_list.first() ).row();
-            destination_model->takeRow( i );
-
-            reference->is_destination = false;
+            this->removeNodeFromDestinationView( reference );
             reference->conflict_flag = 0;
 
         } else if ( selection_mode_toggle->currentIndex() == 0 &&
                     !reference->is_source ) {
 
-            source_model->
-                appendRow( reference->source_model_list );
-
-            source_signal_list->
-                setFirstColumnSpanned( source_model->rowCount()-1,
-                                       dummy_index, true );
-
-            reference->is_source = true;
+            this->addNodeToSourceView( reference );
             reference->conflict_flag = -1;
 
         } else if ( selection_mode_toggle->currentIndex() == 1 &&
                     !reference->is_destination ) {
 
-            destination_model->
-                appendRow( reference->destination_model_list );
-
-            destination_signal_list->
-                setFirstColumnSpanned( destination_model->rowCount()-1,
-                                       dummy_index, true );
-
-            reference->is_destination = true;
+            this->addNodeToDestinationView( reference );
             reference->conflict_flag = 1;
 
         }
@@ -213,43 +252,39 @@ void Form::updateSelectedNodes( bool is_selected ) {
          is_selected &&
          !sender->is_source ) {
 
-            source_model->
-                appendRow( sender->source_model_list );
-
-            source_signal_list->
-                setFirstColumnSpanned( source_model->rowCount()-1,
-                                       dummy_index, true );
-
-            sender->is_source = true;
+            this->addNodeToSourceView( sender );
             sender->conflict_flag = -1;
 
     } else if ( selection_mode_toggle->currentIndex() == 1 &&
                 is_selected &&
                 !sender->is_destination ) {
 
-            destination_model->
-                appendRow( sender->destination_model_list );
-
-            destination_signal_list->
-                setFirstColumnSpanned( destination_model->rowCount()-1,
-                                       dummy_index, true );
-
-            sender->is_destination = true;
+            this->addNodeToDestinationView( sender );
             sender->conflict_flag = 1;
 
     }
 
+/*
     if ( !sender->is_source || !sender->is_destination ) {
 
         sender->conflict_flag = 0;
 
     }
+*/
 
 }
 
 void Form::updateSelectionMode( int index ) {
 
-    printf( "selection mode changed %d\n", index );
+    if ( index == 0 ) {
+
+        printf( "selected sources tab %d\n", index );
+
+    } else if ( index == 1 ) {
+
+        printf( "selected destinations tab %d\n", index );
+
+    }
 
 }
 
@@ -340,7 +375,9 @@ void Form::addNewMapping( mapper_db_mapping record ) {
                         this->node_pointer_list.end(),
                         IsNameMatch );
 
-    (*source_it)->addMapping( *destination_it );
+    (*source_it)->addMapping( (*destination_it),
+                              parsed_str[1].toLatin1().constData(),
+                              parsed_str_2[1].toLatin1().constData() );
 
 }
 

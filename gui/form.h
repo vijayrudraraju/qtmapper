@@ -63,6 +63,11 @@ protected:
     //void scaleView(qreal scaleFactor);
 
 private:
+    void addNodeToDestinationView( Node* the_node );
+    void removeNodeFromDestinationView( Node* the_node );
+    void addNodeToSourceView( Node* the_node );
+    void removeNodeFromSourceView( Node* the_node );
+
     int timerId;
     std::list <Node*> node_pointer_list;
     MapperGraphicsScene* scene;

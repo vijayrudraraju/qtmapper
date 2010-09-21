@@ -10,6 +10,15 @@
 
 class Link;
 class Form;
+class Node;
+
+typedef struct _qt_mapping {
+
+    Node* destination_node;
+    const char* source_signal_name;
+    const char* destination_signal_name;
+
+} *qt_mapping;
 
 class Node : public QObject, public QGraphicsItem
 {
@@ -40,7 +49,9 @@ public:
     QList<QStandardItem*> source_model_list;
     QList<QStandardItem*> destination_model_list;
 
-    void addMapping(Node* destination);
+    void addMapping( Node* destination,
+                    const char* source_signal_name,
+                    const char* destination_signal_name );
 
     bool is_source;
     bool is_destination;
@@ -61,7 +72,7 @@ protected:
 
 private:
     //QList<Link*> linkList;
-    std::list<Node*> destination_list;
+    std::list<qt_mapping> destination_list;
 
     QPointF newPos;
     QGraphicsView *graph;

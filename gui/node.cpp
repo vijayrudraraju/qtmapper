@@ -40,70 +40,20 @@ void Node::setName( const char* new_name ) {
 
 }
 
-void Node::addMapping(Node* destination) {
+void Node::addMapping( Node* destination,
+                       const char* source_signal_name,
+                       const char* destination_signal_name ) {
 
-    this->destination_list.push_back( destination );
+    qt_mapping qt_map =
+            (qt_mapping) calloc( 1, sizeof(struct _qt_mapping) );
 
-}
+    qt_map->destination_node = destination;
+    qt_map->source_signal_name = source_signal_name;
+    qt_map->destination_signal_name = destination_signal_name;
 
-/*
-QList<Edge *> Node::edges() const {
-
-    return edgeList;
-
-}
-*/
-
-/*
-void Node::calculateForces() {
-
-    if (!scene() || scene()->mouseGrabberItem() == this) {
-        newPos = pos();
-        return;
-    }
-
-    // Sum up all forces pushing this item away
-    qreal xvel = 0;
-    qreal yvel = 0;
-    foreach (QGraphicsItem *item, scene()->items()) {
-        Node *node = qgraphicsitem_cast<Node *>(item);
-        if (!node)
-            continue;
-
-        QLineF line(mapFromItem(node, 0, 0), QPointF(0, 0));
-        qreal dx = line.dx();
-        qreal dy = line.dy();
-        double l = 2.0 * (dx * dx + dy * dy);
-        if (l > 0) {
-            xvel += (dx * 150.0) / l;
-            yvel += (dy * 150.0) / l;
-        }
-    }
-
-    // Now subtract all forces pulling items together
-    double weight = (edgeList.size() + 1) * 10;
-    foreach (Edge *edge, edgeList) {
-
-        QPointF pos;
-        if (edge->sourceNode() == this)
-            pos = mapFromItem(edge->destNode(), 0, 0);
-        else
-            pos = mapFromItem(edge->sourceNode(), 0, 0);
-        xvel += pos.x() / weight;
-        yvel += pos.y() / weight;
-
-    }
-
-    if (qAbs(xvel) < 0.1 && qAbs(yvel) < 0.1)
-        xvel = yvel = 0;
-
-    QRectF sceneRect = scene()->sceneRect();
-    newPos = pos() + QPointF(xvel, yvel);
-    newPos.setX(qMin(qMax(newPos.x(), sceneRect.left() + 10), sceneRect.right() - 10));
-    newPos.setY(qMin(qMax(newPos.y(), sceneRect.top() + 10), sceneRect.bottom() - 10));
+    this->destination_list.push_back( qt_map );
 
 }
-*/
 
 bool Node::advance() {
 
@@ -197,7 +147,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value) {
 
 void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
-    printf( "node says -> mouse press %s\n", name);
+    //printf( "node says -> mouse press %s\n", name);
     emit nodePressed( this );
 
     QGraphicsItem::mousePressEvent(event);
@@ -206,7 +156,7 @@ void Node::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
-    printf( "node says -> mouse release %s\n", name);
+    //printf( "node says -> mouse release %s\n", name);
     emit nodeReleased( this );
 
     QGraphicsItem::mouseReleaseEvent(event);
