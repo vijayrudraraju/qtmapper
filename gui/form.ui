@@ -128,7 +128,7 @@
         <widget class="QTreeView" name="source_signal_list"/>
        </item>
        <item>
-        <widget class="QGraphicsView" name="graphicsView_2"/>
+        <widget class="QGraphicsView" name="graphics_view_2"/>
        </item>
        <item>
         <widget class="QTreeView" name="destination_signal_list"/>

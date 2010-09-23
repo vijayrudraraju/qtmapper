@@ -21,7 +21,6 @@ public:
     explicit Form(QWidget *parent = 0);
     ~Form();
 
-    void itemMoved();
     void addNode();
 
     //int (*createTestDeviceFunction)();
@@ -53,6 +52,7 @@ public slots:
     void updateMouseState( bool is_pressed );
     void updatePressedNode( Node* reference );
     void updateReleasedNode( Node* reference );
+    void newDoubleClick( );
 
 protected:
     //void keyPressEvent(QKeyEvent *event);
@@ -68,9 +68,13 @@ private:
     void addNodeToSourceView( Node* the_node );
     void removeNodeFromSourceView( Node* the_node );
 
+    void clearMappingView( );
+    void updateMappingView( );
+
     int timerId;
     std::list <Node*> node_pointer_list;
     MapperGraphicsScene* scene;
+    QGraphicsScene* mapping_scene;
 
     QTimer* timer;
     device_callback_func* db_device_callback_function;

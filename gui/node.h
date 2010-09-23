@@ -57,6 +57,7 @@ public:
     bool is_destination;
     int conflict_flag; //-1 => source, 0 => no confict, 1 => destination
     const char* name;
+    std::list<qt_mapping> destination_list;
 
 signals:
     void selectionStateChanged( bool is_selected );
@@ -72,7 +73,6 @@ protected:
 
 private:
     //QList<Link*> linkList;
-    std::list<qt_mapping> destination_list;
 
     QPointF newPos;
     QGraphicsView *graph;

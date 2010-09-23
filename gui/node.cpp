@@ -48,10 +48,16 @@ void Node::addMapping( Node* destination,
             (qt_mapping) calloc( 1, sizeof(struct _qt_mapping) );
 
     qt_map->destination_node = destination;
-    qt_map->source_signal_name = source_signal_name;
-    qt_map->destination_signal_name = destination_signal_name;
+    qt_map->source_signal_name = strdup(source_signal_name);
+    qt_map->destination_signal_name = strdup(destination_signal_name);
 
     this->destination_list.push_back( qt_map );
+
+    printf( "Node::addMapping %s - %s %s %s\n",
+            this->name,
+            this->destination_list.back()->destination_node->name,
+            this->destination_list.back()->source_signal_name,
+            this->destination_list.back()->destination_signal_name);
 
 }
 

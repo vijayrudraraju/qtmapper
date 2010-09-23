@@ -12,6 +12,7 @@ public:
 
 signals:
     void mouseStateChanged( bool is_pressed );
+    void mouseDoubleClick( );
 
 public slots:
 
@@ -20,6 +21,7 @@ protected:
     void scaleView( qreal factor );
     void mousePressEvent( QMouseEvent *event );
     void mouseReleaseEvent( QMouseEvent *event );
+    void mouseDoubleClickEvent( QMouseEvent *event );
 
 };
 

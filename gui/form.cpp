@@ -21,19 +21,23 @@ Form::Form( QWidget *parent ) :
 
     scene = new MapperGraphicsScene( graphics_view );
     scene->setItemIndexMethod( QGraphicsScene::NoIndex );
-    scene->setSceneRect( 0, 0, 1000, 1000 );
+    scene->setSceneRect( -100, 0, 1000, 1000 );
     scene->setStickyFocus( true );
-
     graphics_view->
             setScene( scene );
     graphics_view->
             setCacheMode( QGraphicsView::CacheBackground );
     graphics_view->
-            setViewportUpdateMode( QGraphicsView::BoundingRectViewportUpdate );
+            setViewportUpdateMode(
+                    QGraphicsView::BoundingRectViewportUpdate );
     graphics_view->
             setRenderHint( QPainter::Antialiasing );
     graphics_view->scale( qreal(0.7), qreal(0.7) );
     graphics_view->setMinimumSize( 600, 300 );
+
+    mapping_scene = new QGraphicsScene( graphics_view_2 );
+    mapping_scene->setSceneRect( 0, 0, 244, 533 );
+    graphics_view_2->setScene( mapping_scene );
 
     QStringList header_labels;
     header_labels << "name" << "host" << "port" << "can alias?";
@@ -59,6 +63,9 @@ Form::Form( QWidget *parent ) :
              this, SLOT(updateSelectionMode(int)) );
     connect( graphics_view, SIGNAL(mouseStateChanged(bool)),
             this, SLOT(updateMouseState(bool)) );
+    connect( graphics_view, SIGNAL(mouseDoubleClick( )),
+            this, SLOT(newDoubleClick( )) );
+
 
     setWindowTitle( tr("Mapper GUI") );
 
@@ -71,8 +78,6 @@ Form::~Form(  ) {
 
 void Form::update(  ) {
 
-    //printf( "Form::update(  )\n" );
-
     mdev_poll( this->qtmapper, 0 );
 
 }
@@ -82,47 +87,19 @@ void Form::updateMouseState( bool is_pressed ) {
     printf( "form says -> mouse state %d\n", is_pressed );
     mouse_is_pressed = is_pressed;
 
-    int index;
-
     if ( !mouse_is_pressed ) {
-
-        printf( "debug ping 2\n" );
 
         for ( std::list<Node*>::iterator it = node_pointer_list.begin();
                 it != node_pointer_list.end();
                 it++ ) {
 
-            printf( "debug ping 3\n" );
-
             if ( (*it)->conflict_flag == -1 ) {
-
-                printf( "debug ping 4\n" );
-                /*
-                index =
-                        destination_model->
-                        indexFromItem( (*it)->
-                                       destination_model_list.first() ).row();
-                destination_model->takeRow( index );
-
-                (*it)->is_destination = false;
-                (*it)->conflict_flag = 0;
-                */
 
                 (*it)->conflict_flag = 0;
                 this->removeNodeFromDestinationView( (*it) );
                 (*it)->is_source = true;
 
             } else if ( (*it)->conflict_flag == 1 ) {
-
-                /*
-                index =
-                        source_model->
-                        indexFromItem( (*it)->
-                                       source_model_list.first() ).row();
-                source_model->takeRow( index );
-                (*it)->is_source = false;
-                (*it)->conflict_flag = 0;
-                */
 
                 (*it)->conflict_flag = 0;
                 this->removeNodeFromSourceView( (*it) );
@@ -131,6 +108,181 @@ void Form::updateMouseState( bool is_pressed ) {
             }
 
             (*it)->update();
+
+        }
+
+    }
+
+}
+
+void Form::newDoubleClick( ) {
+
+    for ( std::list<Node*>::iterator it = node_pointer_list.begin();
+            it != node_pointer_list.end();
+            it++ ) {
+
+        if ( selection_mode_toggle->currentIndex() == 1 &&
+                    (*it)->is_destination ) {
+
+            this->removeNodeFromDestinationView( (*it) );
+
+        } else if ( selection_mode_toggle->currentIndex() == 0 &&
+                    (*it)->is_source ) {
+
+            this->removeNodeFromSourceView( (*it) );
+
+        }
+
+    }
+
+}
+
+void Form::clearMappingView( ) {
+
+    if ( mapping_scene->items().count() == 0 ) {
+
+        return;
+
+    }
+/*
+    for ( QList<QGraphicsItem*>::iterator it =
+          mapping_scene->items().begin();
+          it != mapping_scene->items().end();
+          it++ ) {
+
+        if ( (*it)->isActive() ) {
+            printf( "debug ping 5\n" );
+            mapping_scene->removeItem( (*it) );
+        }
+
+    }
+    */
+    mapping_scene->clear();
+
+}
+
+void Form::updateMappingView( ) {
+
+    QStandardItem* source_item_pointer;
+    QStandardItem* destination_item_pointer;
+    QStandardItem* source_signal_item_pointer;
+    QStandardItem* destination_signal_item_pointer;
+    Node* source_pointer;
+    Node* destination_pointer;
+    QModelIndex source_signal_index;
+    QModelIndex destination_signal_index;
+    QRect source_signal_rect;
+    QRect destination_signal_rect;
+
+    clearMappingView( );
+    this->mapping_scene->addLine( 0, 5, 244, 5 );
+
+    for ( int i = 0;
+            i < source_model->rowCount( );
+            i++ ) {
+
+        source_item_pointer = source_model->item( i, 4 );
+        source_pointer = (Node*)(source_item_pointer->text().toInt());
+        source_item_pointer = source_model->item( i, 0 );
+
+        for ( std::list<qt_mapping>::iterator it =
+                source_pointer->destination_list.begin();
+              it != source_pointer->destination_list.end();
+              it++ ) {
+
+            for ( int j = 0;
+                    j < destination_model->rowCount( );
+                    j++ ) {
+
+                destination_item_pointer = destination_model->item( j, 4 );
+                destination_pointer =
+                        (Node*)(destination_item_pointer->text().toInt());
+                destination_item_pointer =
+                        destination_model->item( j, 0 );
+
+                if ( !strcmp((*it)->destination_node->name,
+                     destination_pointer->name)
+                     ) {
+
+
+                    printf( "debug flag 1 - %s - %s - %s - %s\n",
+                            source_pointer->name,
+                            (*it)->source_signal_name,
+                            destination_pointer->name,
+                            (*it)->destination_signal_name );
+                    printf( "debug ping 2 %d %d\n",
+                            source_item_pointer->rowCount(),
+                            destination_item_pointer->rowCount() );
+
+                    for ( int k = 0;
+                          k < source_item_pointer->rowCount();
+                          k++ ) {
+
+                        printf( "debug ping 3 %s %s\n",
+                                source_item_pointer->child( k, 0 )->
+                                text().toLatin1().constData(),
+                                (*it)->source_signal_name );
+
+                        if ( !strcmp(source_item_pointer->child( k, 0 )->
+                             text().toLatin1().constData(),
+                             (*it)->source_signal_name) ) {
+
+                            source_signal_item_pointer =
+                                    source_item_pointer->child( k, 0 );
+                            break;
+
+                        }
+
+                    }
+
+                    for ( int k = 0;
+                          k < destination_item_pointer->rowCount();
+                          k++ ) {
+
+                        printf( "debug ping 4 %s %s\n",
+                                destination_item_pointer->child( k, 0 )->
+                                text().toLatin1().constData(),
+                                (*it)->destination_signal_name );
+
+                        if ( !strcmp(destination_item_pointer->child( k, 0 )->
+                             text().toLatin1().constData(),
+                             (*it)->destination_signal_name) ) {
+
+                            destination_signal_item_pointer =
+                                    destination_item_pointer->child( k, 0 );
+                            break;
+
+                        }
+
+                    }
+
+                    source_signal_index =
+                            source_model->
+                            indexFromItem( source_signal_item_pointer );
+                    destination_signal_index =
+                            destination_model->
+                            indexFromItem( destination_signal_item_pointer );
+                    source_signal_rect =
+                            source_signal_list->
+                            visualRect( source_signal_index  );
+                    destination_signal_rect =
+                            destination_signal_list->
+                            visualRect( destination_signal_index  );
+
+                    printf( "source signal y pos: %d\n",
+                            source_signal_rect.topLeft().y() );
+                    printf( "destination signal y pos: %d\n",
+                            destination_signal_rect.topLeft().y() );
+
+                    this->mapping_scene->
+                            addLine( 0,
+                                     source_signal_rect.topLeft().y(),
+                                     244,
+                                     destination_signal_rect.topLeft().y() );
+
+                }
+
+            }
 
         }
 
@@ -148,6 +300,8 @@ void Form::addNodeToDestinationView( Node* the_node ) {
                                dummy_index, true );
     the_node->is_destination = true;
     the_node->is_source = false;
+
+    updateMappingView();
 
 }
 
@@ -174,6 +328,8 @@ void Form::addNodeToSourceView( Node* the_node ) {
     the_node->is_destination = false;
     the_node->update();
 
+    updateMappingView();
+
 }
 
 void Form::removeNodeFromSourceView( Node* the_node ) {
@@ -196,7 +352,6 @@ void Form::updatePressedNode( Node* reference ) {
 
 void Form::updateReleasedNode( Node* reference ) {
 
-    int i;
     QModelIndex dummy_index;
 
     if ( this->active_node_name == reference->name ) {
@@ -263,14 +418,6 @@ void Form::updateSelectedNodes( bool is_selected ) {
             sender->conflict_flag = 1;
 
     }
-
-/*
-    if ( !sender->is_source || !sender->is_destination ) {
-
-        sender->conflict_flag = 0;
-
-    }
-*/
 
 }
 
@@ -339,6 +486,7 @@ void Form::setMapperDevice( mapper_device device ) {
 
 bool Form::IsNameMatch( Node* i ) {
 
+    printf( "IsNameMatch %s %s\n", i->name, device_search_term);
     return !strcmp( i->name, device_search_term );
 
 }
@@ -363,6 +511,8 @@ void Form::addNewMapping( mapper_db_mapping record ) {
 
     parsed_str[0].prepend("/");
     parsed_str_2[0].prepend("/");
+    parsed_str[1].prepend("/");
+    parsed_str_2[1].prepend("/");
 
     Form::device_search_term =
             parsed_str[0].toLatin1().constData();
@@ -447,10 +597,11 @@ void Form::addNewDevice( const char* name,
 
     std::string temp_string;
     std::stringstream out;
+    Node* new_device = new Node(graphics_view);
 
     printf( "addNewDevice(  ) %d %d \n", default_x, default_y );
 
-    this->node_pointer_list.push_back( new Node(graphics_view) );
+    this->node_pointer_list.push_back( new_device );
     this->node_pointer_list.back()->setName( name );
     scene->addItem(this->node_pointer_list.back());
     this->node_pointer_list.back()->setPos( default_x, default_y );
@@ -459,6 +610,7 @@ void Form::addNewDevice( const char* name,
     QStandardItem* source_item_2 = new QStandardItem;
     QStandardItem* source_item_3 = new QStandardItem;
     QStandardItem* source_item_4 = new QStandardItem;
+    QStandardItem* source_pointer_item = new QStandardItem;
     source_item_1->setText( name );
     source_item_2->setText( host );
     out << port;
@@ -466,16 +618,22 @@ void Form::addNewDevice( const char* name,
     out.str( "" );
     out << can_alias;
     source_item_4->setText( out.str().c_str() );
+    out.str( "" );
+    out << (int)new_device;
+    source_pointer_item->setText( out.str().c_str() );
     this->node_pointer_list.back()->source_model_list
             << source_item_1
             << source_item_2
             << source_item_3
-            << source_item_4;
+            << source_item_4
+            << source_pointer_item;
+    //printf( "pointer int %d\n", (int)new_device );
 
     QStandardItem* destination_item_1 = new QStandardItem;
     QStandardItem* destination_item_2 = new QStandardItem;
     QStandardItem* destination_item_3 = new QStandardItem;
     QStandardItem* destination_item_4 = new QStandardItem;
+    QStandardItem* destination_pointer_item = new QStandardItem;
     destination_item_1->setText( name );
     destination_item_2->setText( host );
     out.str( "" );
@@ -484,11 +642,15 @@ void Form::addNewDevice( const char* name,
     out.str( "" );
     out << can_alias;
     destination_item_4->setText( out.str().c_str() );
+    out.str( "" );
+    out << (int)new_device;
+    destination_pointer_item->setText( out.str().c_str() );
     this->node_pointer_list.back()->destination_model_list
             << destination_item_1
             << destination_item_2
             << destination_item_3
-            << destination_item_4;
+            << destination_item_4
+            << destination_pointer_item;
 
     //printf( "appended row to model with %d %d columns\n",
     //        this->node_pointer_list.back()->model_list.size(),
@@ -516,10 +678,4 @@ void Form::addNewDevice( const char* name,
 
     }
 
-}
-
-void Form::itemMoved()
-{
-    if (!timerId)
-        timerId = startTimer(1000 / 25);
 }

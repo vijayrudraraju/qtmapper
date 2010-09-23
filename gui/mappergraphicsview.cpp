@@ -26,6 +26,12 @@ void MapperGraphicsView::mouseReleaseEvent( QMouseEvent *event ) {
 
 }
 
+void MapperGraphicsView::mouseDoubleClickEvent( QMouseEvent *event ) {
+
+    QGraphicsView::mouseDoubleClickEvent( event );
+    emit mouseDoubleClick( );
+
+}
 
 void MapperGraphicsView::wheelEvent( QWheelEvent *event ) {
 
