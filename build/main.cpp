@@ -146,6 +146,8 @@ int main( int argc, char *argv[] ) {
 
     form->show();
 
+    //add_new_mapping( "/qtmapper.1/outsig", "/qttestrecv.1/insig" );
+
     app.exec();
 
     return 0;

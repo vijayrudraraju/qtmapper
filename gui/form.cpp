@@ -21,35 +21,46 @@ Form::Form( QWidget *parent ) :
 
     scene = new MapperGraphicsScene( graphics_view );
     scene->setItemIndexMethod( QGraphicsScene::NoIndex );
-    scene->setSceneRect( -100, 0, 1000, 1000 );
     scene->setStickyFocus( true );
     graphics_view->
             setScene( scene );
     graphics_view->
             setCacheMode( QGraphicsView::CacheBackground );
     graphics_view->
-            setViewportUpdateMode(
-                    QGraphicsView::BoundingRectViewportUpdate );
+            setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
     graphics_view->
             setRenderHint( QPainter::Antialiasing );
     graphics_view->scale( qreal(0.7), qreal(0.7) );
     graphics_view->setMinimumSize( 600, 300 );
+    graphics_view->setAlignment( Qt::AlignLeft|Qt::AlignTop );
+    graphics_view->setSceneRect( -100, 0, 1000, 1000 );
 
     mapping_scene = new QGraphicsScene( graphics_view_2 );
-    mapping_scene->setSceneRect( 0, 0, 244, 533 );
     graphics_view_2->setScene( mapping_scene );
+    graphics_view_2->installEventFilter( this );
+    graphics_view_2->setAlignment( Qt::AlignLeft|Qt::AlignTop );
+    graphics_view->
+            setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
+    graphics_view_2->setSceneRect(  0, 0,
+                                 graphics_view_2->width(),
+                                 graphics_view_2->height());
+    graphics_view_2->fitInView( 0, 0,
+                                graphics_view_2->width(),
+                                graphics_view_2->height(),
+                                Qt::KeepAspectRatioByExpanding);
 
     QStringList header_labels;
     header_labels << "name" << "host" << "port" << "can alias?";
     QStringList header_edit_labels;
-    header_edit_labels << "name" << "type" << "length" << "other";
+    header_edit_labels <<
+            "name" << "type" << "length" << "other" << "pointer";
 
-    source_model = new QStandardItemModel( 0, 4 );
+    source_model = new QStandardItemModel( 0, 5 );
     source_model->setHorizontalHeaderLabels( header_labels );
     source_list->setModel( source_model );
     source_list->setMinimumSize( 600, 300 );
 
-    destination_model = new QStandardItemModel( 0, 4 );
+    destination_model = new QStandardItemModel( 0, 5 );
     destination_model->setHorizontalHeaderLabels( header_labels );
     destination_list->setModel( destination_model );
     destination_list->setMinimumSize( 600, 300 );
@@ -57,28 +68,57 @@ Form::Form( QWidget *parent ) :
     source_signal_list->setModel( source_model );
     destination_signal_list->setModel( destination_model );
 
+    this->source_list->setColumnHidden( 4, true );
+    this->destination_list->setColumnHidden( 4, true );
+    this->source_signal_list->setColumnHidden( 3, true );
+    this->destination_signal_list->setColumnHidden( 3, true );
+    this->source_signal_list->setColumnHidden( 4, true );
+    this->destination_signal_list->setColumnHidden( 4, true );
+
     this->active_node_name = "";
 
     connect( selection_mode_toggle, SIGNAL(currentChanged(int)),
              this, SLOT(updateSelectionMode(int)) );
+    connect( edit_mode_toggle, SIGNAL(currentChanged(int)),
+             this, SLOT(updateEditSelectionMode(int)) );
     connect( graphics_view, SIGNAL(mouseStateChanged(bool)),
             this, SLOT(updateMouseState(bool)) );
     connect( graphics_view, SIGNAL(mouseDoubleClick( )),
             this, SLOT(newDoubleClick( )) );
-
+    connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
+             this, SLOT(beginToDrawMapping(QModelIndex)) );
 
     setWindowTitle( tr("Mapper GUI") );
 
 }
 
-Form::~Form(  ) {
+void Form::beginToDrawMapping( QModelIndex index ) {
 
+    QRect source_signal_rect;
+    source_signal_rect =
+            source_signal_list->
+            visualRect( index  );
+    printf( "source signal y pos: %d\n",
+            source_signal_rect.topLeft().y() );
 
 }
 
 void Form::update(  ) {
 
     mdev_poll( this->qtmapper, 0 );
+    QWidget::update();
+    //updateMappingView();
+
+    //this->destination_signal_list->resizeColumnToContents( 0 );
+    this->destination_signal_list->setColumnWidth( 0, 180 );
+    this->destination_signal_list->resizeColumnToContents( 1 );
+    this->destination_signal_list->resizeColumnToContents( 2 );
+    this->destination_signal_list->resizeColumnToContents( 3 );
+    //this->source_signal_list->resizeColumnToContents( 0 );
+    this->source_signal_list->setColumnWidth( 0, 180 );
+    this->source_signal_list->resizeColumnToContents( 1 );
+    this->source_signal_list->resizeColumnToContents( 2 );
+    this->source_signal_list->resizeColumnToContents( 3 );
 
 }
 
@@ -144,19 +184,7 @@ void Form::clearMappingView( ) {
         return;
 
     }
-/*
-    for ( QList<QGraphicsItem*>::iterator it =
-          mapping_scene->items().begin();
-          it != mapping_scene->items().end();
-          it++ ) {
 
-        if ( (*it)->isActive() ) {
-            printf( "debug ping 5\n" );
-            mapping_scene->removeItem( (*it) );
-        }
-
-    }
-    */
     mapping_scene->clear();
 
 }
@@ -174,8 +202,12 @@ void Form::updateMappingView( ) {
     QRect source_signal_rect;
     QRect destination_signal_rect;
 
+    QPen pen_width;
+    pen_width.setWidth( 1 );
+
+    int vertical_offset;
+
     clearMappingView( );
-    this->mapping_scene->addLine( 0, 5, 244, 5 );
 
     for ( int i = 0;
             i < source_model->rowCount( );
@@ -204,7 +236,7 @@ void Form::updateMappingView( ) {
                      destination_pointer->name)
                      ) {
 
-
+/*
                     printf( "debug flag 1 - %s - %s - %s - %s\n",
                             source_pointer->name,
                             (*it)->source_signal_name,
@@ -213,15 +245,18 @@ void Form::updateMappingView( ) {
                     printf( "debug ping 2 %d %d\n",
                             source_item_pointer->rowCount(),
                             destination_item_pointer->rowCount() );
+                            */
 
                     for ( int k = 0;
                           k < source_item_pointer->rowCount();
                           k++ ) {
 
+                        /*
                         printf( "debug ping 3 %s %s\n",
                                 source_item_pointer->child( k, 0 )->
                                 text().toLatin1().constData(),
                                 (*it)->source_signal_name );
+*/
 
                         if ( !strcmp(source_item_pointer->child( k, 0 )->
                              text().toLatin1().constData(),
@@ -239,10 +274,12 @@ void Form::updateMappingView( ) {
                           k < destination_item_pointer->rowCount();
                           k++ ) {
 
+                        /*
                         printf( "debug ping 4 %s %s\n",
                                 destination_item_pointer->child( k, 0 )->
                                 text().toLatin1().constData(),
                                 (*it)->destination_signal_name );
+*/
 
                         if ( !strcmp(destination_item_pointer->child( k, 0 )->
                              text().toLatin1().constData(),
@@ -273,12 +310,34 @@ void Form::updateMappingView( ) {
                             source_signal_rect.topLeft().y() );
                     printf( "destination signal y pos: %d\n",
                             destination_signal_rect.topLeft().y() );
+                    printf( "graphics_view_2 %d %d\n",
+                            graphics_view_2->width(),
+                            graphics_view_2->height() );
 
+                    vertical_offset =
+                            source_signal_list->header()->height() +
+                            (source_signal_rect.height() / 2) + 1;
+
+                    printf( "vertical_offset: %d\n",
+                            vertical_offset );
+                    printf( "source_signal_rect %d\n",
+                            source_signal_rect.height() / 2 );
+
+                    graphics_view_2->setSceneRect(  0, 0,
+                                                 graphics_view_2->width(),
+                                                 graphics_view_2->height());
+                    graphics_view_2->fitInView( 0, 0,
+                                                graphics_view_2->width(),
+                                                graphics_view_2->height(),
+                                                Qt::KeepAspectRatioByExpanding);
                     this->mapping_scene->
                             addLine( 0,
+                                     vertical_offset +
                                      source_signal_rect.topLeft().y(),
-                                     244,
-                                     destination_signal_rect.topLeft().y() );
+                                     graphics_view_2->width(),
+                                     vertical_offset +
+                                     destination_signal_rect.topLeft().y(),
+                                     pen_width );
 
                 }
 
@@ -300,6 +359,12 @@ void Form::addNodeToDestinationView( Node* the_node ) {
                                dummy_index, true );
     the_node->is_destination = true;
     the_node->is_source = false;
+    the_node->update();
+
+    destination_signal_list->expand(
+            destination_model->
+            indexFromItem( the_node->destination_model_list.first() )
+            );
 
     updateMappingView();
 
@@ -327,6 +392,11 @@ void Form::addNodeToSourceView( Node* the_node ) {
     the_node->is_source = true;
     the_node->is_destination = false;
     the_node->update();
+
+    source_signal_list->expand(
+            source_model->
+            indexFromItem( the_node->source_model_list.first() )
+            );
 
     updateMappingView();
 
@@ -421,6 +491,33 @@ void Form::updateSelectedNodes( bool is_selected ) {
 
 }
 
+bool Form::eventFilter( QObject *obj, QEvent *event ) {
+
+    if ( event->type() == QEvent::Resize ) {
+/*
+        printf( "got resize event %d %d\n",
+                ((QResizeEvent*)event)->size().width(),
+                ((QResizeEvent*)event)->size().height() );
+                */
+        updateMappingView();
+        return true;
+
+    } else if ( event->type() == QEvent::Show) {
+/*
+        mapping_scene->setSceneRect( 0, 0,
+                                     graphics_view_2->width(),
+                                     graphics_view_2->height() );
+                                     */
+        return true;
+
+    } else {
+
+        return QObject::eventFilter(obj, event);
+
+    }
+
+}
+
 void Form::updateSelectionMode( int index ) {
 
     if ( index == 0 ) {
@@ -430,6 +527,21 @@ void Form::updateSelectionMode( int index ) {
     } else if ( index == 1 ) {
 
         printf( "selected destinations tab %d\n", index );
+
+    }
+
+}
+
+void Form::updateEditSelectionMode( int index ) {
+
+    if ( index == 0 ) {
+
+        printf( "selected neighborhood tab %d\n", index );
+
+    } else if ( index == 1 ) {
+
+        printf( "selected edit tab %d\n", index );
+        updateMappingView();
 
     }
 
@@ -486,7 +598,7 @@ void Form::setMapperDevice( mapper_device device ) {
 
 bool Form::IsNameMatch( Node* i ) {
 
-    printf( "IsNameMatch %s %s\n", i->name, device_search_term);
+    //printf( "IsNameMatch %s %s\n", i->name, device_search_term);
     return !strcmp( i->name, device_search_term );
 
 }

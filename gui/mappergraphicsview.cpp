@@ -57,3 +57,10 @@ void MapperGraphicsView::scaleView( qreal factor ) {
     scale( factor, factor );
 
 }
+
+void MapperGraphicsView::resizeEvent( QResizeEvent *event ) {
+
+    emit mappingViewResized( event->size().width(),
+                             event->size().height() );
+
+}

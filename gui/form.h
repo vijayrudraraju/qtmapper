@@ -19,7 +19,6 @@ class Form : public QWidget, private Ui::Form {
 
 public:
     explicit Form(QWidget *parent = 0);
-    ~Form();
 
     void addNode();
 
@@ -48,11 +47,14 @@ public slots:
 
     void updateSelectedNodes( bool is_selected );
     void updateSelectionMode( int index );
+    void updateEditSelectionMode( int index );
 
     void updateMouseState( bool is_pressed );
     void updatePressedNode( Node* reference );
     void updateReleasedNode( Node* reference );
     void newDoubleClick( );
+
+    void beginToDrawMapping( QModelIndex index );
 
 protected:
     //void keyPressEvent(QKeyEvent *event);
@@ -61,6 +63,7 @@ protected:
     //void viewportEvent(QEvent* event);
     //void drawBackground(QPainter *painter, const QRectF &rect);
     //void scaleView(qreal scaleFactor);
+    bool eventFilter( QObject* obj, QEvent* event );
 
 private:
     void addNodeToDestinationView( Node* the_node );
