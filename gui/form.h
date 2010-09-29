@@ -45,6 +45,8 @@ public:
 public slots:
     void update();
 
+    void updateMappingView( );
+
     void updateSelectedNodes( bool is_selected );
     void updateSelectionMode( int index );
     void updateEditSelectionMode( int index );
@@ -72,12 +74,11 @@ private:
     void removeNodeFromSourceView( Node* the_node );
 
     void clearMappingView( );
-    void updateMappingView( );
 
     int timerId;
     std::list <Node*> node_pointer_list;
     MapperGraphicsScene* scene;
-    QGraphicsScene* mapping_scene;
+    QGraphicsScene mapping_scene;
 
     QTimer* timer;
     device_callback_func* db_device_callback_function;

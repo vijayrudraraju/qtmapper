@@ -35,19 +35,12 @@ Form::Form( QWidget *parent ) :
     graphics_view->setAlignment( Qt::AlignLeft|Qt::AlignTop );
     graphics_view->setSceneRect( -100, 0, 1000, 1000 );
 
-    mapping_scene = new QGraphicsScene( graphics_view_2 );
-    graphics_view_2->setScene( mapping_scene );
+    graphics_view_2->setScene( &mapping_scene );
     graphics_view_2->installEventFilter( this );
     graphics_view_2->setAlignment( Qt::AlignLeft|Qt::AlignTop );
-    graphics_view->
-            setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
-    graphics_view_2->setSceneRect(  0, 0,
-                                 graphics_view_2->width(),
-                                 graphics_view_2->height());
-    graphics_view_2->fitInView( 0, 0,
-                                graphics_view_2->width(),
-                                graphics_view_2->height(),
-                                Qt::KeepAspectRatioByExpanding);
+
+    printf( "graphics_view_2->width %d, graphics_view_2->height %d\n",
+            graphics_view_2->width(), graphics_view_2->height() );
 
     QStringList header_labels;
     header_labels << "name" << "host" << "port" << "can alias?";
@@ -67,6 +60,10 @@ Form::Form( QWidget *parent ) :
 
     source_signal_list->setModel( source_model );
     destination_signal_list->setModel( destination_model );
+    /*
+    this->source_signal_list->
+            setStyleSheet( "selection-color: rgba(0,0,0,0%)");
+            */
 
     this->source_list->setColumnHidden( 4, true );
     this->destination_list->setColumnHidden( 4, true );
@@ -83,13 +80,28 @@ Form::Form( QWidget *parent ) :
              this, SLOT(updateEditSelectionMode(int)) );
     connect( graphics_view, SIGNAL(mouseStateChanged(bool)),
             this, SLOT(updateMouseState(bool)) );
+    /*
     connect( graphics_view, SIGNAL(mouseDoubleClick( )),
             this, SLOT(newDoubleClick( )) );
+    */
+    /*
     connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
              this, SLOT(beginToDrawMapping(QModelIndex)) );
+    connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
+             this, SLOT(beginToDrawMapping(QModelIndex)) );
+             */
+
+    connect( this->destination_signal_list, SIGNAL(collapsed(QModelIndex)),
+             this, SLOT(updateMappingView()) );
+    connect( this->source_signal_list, SIGNAL(collapsed(QModelIndex)),
+             this, SLOT(updateMappingView()) );
+    connect( this->source_signal_list, SIGNAL(expanded(QModelIndex)),
+             this, SLOT(updateMappingView()) );
+    connect( this->destination_signal_list, SIGNAL(expanded(QModelIndex)),
+             this, SLOT(updateMappingView()) );
+
 
     setWindowTitle( tr("Mapper GUI") );
-
 }
 
 void Form::beginToDrawMapping( QModelIndex index ) {
@@ -178,14 +190,15 @@ void Form::newDoubleClick( ) {
 }
 
 void Form::clearMappingView( ) {
-
+/*
     if ( mapping_scene->items().count() == 0 ) {
 
         return;
 
     }
+*/
 
-    mapping_scene->clear();
+    mapping_scene.clear();
 
 }
 
@@ -198,15 +211,22 @@ void Form::updateMappingView( ) {
     Node* source_pointer;
     Node* destination_pointer;
     QModelIndex source_signal_index;
-    QModelIndex destination_signal_index;
+    QModelIndex dest_signal_index;
     QRect source_signal_rect;
     QRect destination_signal_rect;
 
     QPen pen_width;
     pen_width.setWidth( 1 );
 
-    int vertical_offset;
+    int source_vertical_offset;
+    int dest_vertical_offset;
 
+    this->graphics_view_2->
+            viewport()->setFixedSize( graphics_view_2->width(),
+                                      graphics_view_2->height() );
+    this->graphics_view_2->setSceneRect( 0, 0,
+                                      graphics_view_2->width(),
+                                      graphics_view_2->height() );
     clearMappingView( );
 
     for ( int i = 0;
@@ -236,27 +256,9 @@ void Form::updateMappingView( ) {
                      destination_pointer->name)
                      ) {
 
-/*
-                    printf( "debug flag 1 - %s - %s - %s - %s\n",
-                            source_pointer->name,
-                            (*it)->source_signal_name,
-                            destination_pointer->name,
-                            (*it)->destination_signal_name );
-                    printf( "debug ping 2 %d %d\n",
-                            source_item_pointer->rowCount(),
-                            destination_item_pointer->rowCount() );
-                            */
-
                     for ( int k = 0;
                           k < source_item_pointer->rowCount();
                           k++ ) {
-
-                        /*
-                        printf( "debug ping 3 %s %s\n",
-                                source_item_pointer->child( k, 0 )->
-                                text().toLatin1().constData(),
-                                (*it)->source_signal_name );
-*/
 
                         if ( !strcmp(source_item_pointer->child( k, 0 )->
                              text().toLatin1().constData(),
@@ -274,13 +276,6 @@ void Form::updateMappingView( ) {
                           k < destination_item_pointer->rowCount();
                           k++ ) {
 
-                        /*
-                        printf( "debug ping 4 %s %s\n",
-                                destination_item_pointer->child( k, 0 )->
-                                text().toLatin1().constData(),
-                                (*it)->destination_signal_name );
-*/
-
                         if ( !strcmp(destination_item_pointer->child( k, 0 )->
                              text().toLatin1().constData(),
                              (*it)->destination_signal_name) ) {
@@ -296,7 +291,7 @@ void Form::updateMappingView( ) {
                     source_signal_index =
                             source_model->
                             indexFromItem( source_signal_item_pointer );
-                    destination_signal_index =
+                    dest_signal_index =
                             destination_model->
                             indexFromItem( destination_signal_item_pointer );
                     source_signal_rect =
@@ -304,40 +299,53 @@ void Form::updateMappingView( ) {
                             visualRect( source_signal_index  );
                     destination_signal_rect =
                             destination_signal_list->
-                            visualRect( destination_signal_index  );
+                            visualRect( dest_signal_index  );
 
-                    printf( "source signal y pos: %d\n",
-                            source_signal_rect.topLeft().y() );
-                    printf( "destination signal y pos: %d\n",
-                            destination_signal_rect.topLeft().y() );
-                    printf( "graphics_view_2 %d %d\n",
-                            graphics_view_2->width(),
-                            graphics_view_2->height() );
+                    if ( source_signal_rect.topLeft().y() == 0 ) {
 
-                    vertical_offset =
+                        source_signal_rect =
+                                source_signal_list->
+                                visualRect( source_signal_index.parent() );
+
+                    }
+
+                    if ( destination_signal_rect.topLeft().y() == 0 ) {
+
+                        destination_signal_rect =
+                                destination_signal_list->
+                                visualRect( dest_signal_index.parent() );
+
+                    }
+
+                    source_vertical_offset =
                             source_signal_list->header()->height() +
-                            (source_signal_rect.height() / 2) + 1;
+                            ( source_signal_rect.height() / 2 ) + 1;
+                    dest_vertical_offset =
+                            destination_signal_list->header()->height() +
+                            ( destination_signal_rect.height() / 2 ) + 1;
 
-                    printf( "vertical_offset: %d\n",
-                            vertical_offset );
-                    printf( "source_signal_rect %d\n",
-                            source_signal_rect.height() / 2 );
+                    printf( "source signal y %d + offset %d\n",
+                            source_signal_rect.topLeft().y(),
+                            source_vertical_offset );
+                    printf( "destination signal y %d + offset %d\n",
+                            destination_signal_rect.topLeft().y(),
+                            dest_vertical_offset );
 
-                    graphics_view_2->setSceneRect(  0, 0,
-                                                 graphics_view_2->width(),
-                                                 graphics_view_2->height());
-                    graphics_view_2->fitInView( 0, 0,
-                                                graphics_view_2->width(),
-                                                graphics_view_2->height(),
-                                                Qt::KeepAspectRatioByExpanding);
-                    this->mapping_scene->
-                            addLine( 0,
-                                     vertical_offset +
+                    this->mapping_scene.addLine( 0,
+                                     source_vertical_offset +
                                      source_signal_rect.topLeft().y(),
                                      graphics_view_2->width(),
-                                     vertical_offset +
+                                     dest_vertical_offset +
                                      destination_signal_rect.topLeft().y(),
                                      pen_width );
+                    /*
+                    this->graphics_view_2->
+                            viewport()->setFixedSize( graphics_view_2->width(),
+                                                      graphics_view_2->height() );
+                    this->graphics_view_2->setSceneRect( 0, 0,
+                                                      graphics_view_2->width(),
+                                                      graphics_view_2->height() );
+                                                      */
 
                 }
 
@@ -347,6 +355,21 @@ void Form::updateMappingView( ) {
 
     }
 
+    printf( "updateMappingView: graphics_view_2->width %d\t, graphics_view_2->height %d\n",
+            graphics_view_2->width(),
+            graphics_view_2->height() );
+    printf( "updateMappingView: graphics_view_2->sceneRect->width %f\t, graphics_view_2->sceneRect->height %f\n",
+            graphics_view_2->sceneRect().width(),
+            graphics_view_2->sceneRect().height() );
+    printf( "updateMappingView: graphics_view_2->viewport->width %d\t, graphics_view_2->viewport->height %d\n",
+            graphics_view_2->viewport()->width(),
+            graphics_view_2->viewport()->height() );
+    printf( "updateMappingView: mapping_scene->maximumViewportSize->width %d\t, mapping_scene->maximumViewportSize->height %d\n",
+            graphics_view_2->maximumViewportSize().width(),
+            graphics_view_2->maximumViewportSize().height() );
+    printf( "updateMappingView: mapping_scene->sceneRect->width %f\t, mapping_scene->sceneRect->height %f\n\n",
+            mapping_scene.sceneRect().width(),
+            mapping_scene.sceneRect().height() );
 }
 
 void Form::addNodeToDestinationView( Node* the_node ) {
@@ -360,13 +383,13 @@ void Form::addNodeToDestinationView( Node* the_node ) {
     the_node->is_destination = true;
     the_node->is_source = false;
     the_node->update();
-
+/*
     destination_signal_list->expand(
             destination_model->
             indexFromItem( the_node->destination_model_list.first() )
             );
-
-    updateMappingView();
+*/
+    //updateMappingView();
 
 }
 
@@ -393,12 +416,13 @@ void Form::addNodeToSourceView( Node* the_node ) {
     the_node->is_destination = false;
     the_node->update();
 
+    /*
     source_signal_list->expand(
             source_model->
             indexFromItem( the_node->source_model_list.first() )
             );
-
-    updateMappingView();
+*/
+    //updateMappingView();
 
 }
 
