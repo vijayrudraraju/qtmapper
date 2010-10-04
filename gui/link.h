@@ -7,7 +7,7 @@ class Link
 {
 
 public:
-    Link( Node *sourceNode, Node *destNode );
+    Link(  );
     ~Link(  );
 
 private:

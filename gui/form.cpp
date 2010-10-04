@@ -59,11 +59,9 @@ Form::Form( QWidget *parent ) :
     destination_list->setMinimumSize( 600, 300 );
 
     source_signal_list->setModel( source_model );
+    //source_signal_item_delegate = new MapperItemDelegate( source_model );
+    //source_signal_list->setItemDelegate( source_signal_item_delegate );
     destination_signal_list->setModel( destination_model );
-    /*
-    this->source_signal_list->
-            setStyleSheet( "selection-color: rgba(0,0,0,0%)");
-            */
 
     this->source_list->setColumnHidden( 4, true );
     this->destination_list->setColumnHidden( 4, true );
@@ -73,6 +71,8 @@ Form::Form( QWidget *parent ) :
     this->destination_signal_list->setColumnHidden( 4, true );
 
     this->active_node_name = "";
+    this->selected_source_circle = NULL;
+    this->selected_destination_circle = NULL;
 
     connect( selection_mode_toggle, SIGNAL(currentChanged(int)),
              this, SLOT(updateSelectionMode(int)) );
@@ -84,9 +84,12 @@ Form::Form( QWidget *parent ) :
     connect( graphics_view, SIGNAL(mouseDoubleClick( )),
             this, SLOT(newDoubleClick( )) );
     */
-    /*
+
     connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
              this, SLOT(beginToDrawMapping(QModelIndex)) );
+    connect( this->destination_signal_list, SIGNAL(clicked(QModelIndex)),
+             this, SLOT(finishDrawingMapping(QModelIndex)) );
+    /*
     connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
              this, SLOT(beginToDrawMapping(QModelIndex)) );
              */
@@ -101,17 +104,104 @@ Form::Form( QWidget *parent ) :
              this, SLOT(updateMappingView()) );
 
 
-    setWindowTitle( tr("Mapper GUI") );
+    setWindowTitle( tr("libmapper monitor") );
 }
 
-void Form::beginToDrawMapping( QModelIndex index ) {
+void Form::beginToDrawMapping( const QModelIndex& index ) {
+
+    QPen pen_color;
+    pen_color.setColor( Qt::yellow );
+    QBrush brush_color;
+    brush_color.setColor( Qt::yellow );
+    brush_color.setStyle( Qt::SolidPattern );
 
     QRect source_signal_rect;
     source_signal_rect =
             source_signal_list->
             visualRect( index  );
-    printf( "source signal y pos: %d\n",
-            source_signal_rect.topLeft().y() );
+
+    int source_vertical_offset =
+            source_signal_list->header()->height();
+
+    if ( this->selected_source_circle != NULL ) {
+        this->mapping_scene.removeItem( this->selected_source_circle );
+    }
+    if ( index.parent().isValid() ) {
+
+        this->selected_source_circle =
+        this->mapping_scene.addEllipse( -1 * (source_signal_rect.height()/2 - 1),
+                         source_vertical_offset +
+                         source_signal_rect.topLeft().y() + 1,
+                         source_signal_rect.height() - 2,
+                         source_signal_rect.height() - 2,
+                         pen_color,
+                         brush_color );
+
+        this->selected_signal = index;
+
+    }
+
+}
+
+void Form::finishDrawingMapping( const QModelIndex& index ) {
+
+    QString source_str = "";
+    QString dest_str = "";
+
+    QPen pen_color;
+    pen_color.setColor( Qt::blue );
+    QBrush brush_color;
+    brush_color.setColor( Qt::blue );
+    brush_color.setStyle( Qt::SolidPattern );
+
+    QRect dest_signal_rect;
+    dest_signal_rect =
+            destination_signal_list->
+            visualRect( index  );
+
+    int dest_vertical_offset =
+            destination_signal_list->header()->height();
+
+    if ( this->selected_destination_circle != NULL ) {
+        this->mapping_scene.removeItem( this->selected_destination_circle );
+    }
+
+    if ( index.isValid() && index.parent().isValid() ) {
+
+        this->selected_destination_circle =
+        this->mapping_scene.addEllipse(
+                 graphics_view_2->width() - dest_signal_rect.height() + 4,
+                 dest_vertical_offset +
+                 dest_signal_rect.topLeft().y() + 1,
+                 dest_signal_rect.height() - 2,
+                 dest_signal_rect.height() - 2,
+                 pen_color,
+                 brush_color );
+
+        dest_str.append( this->destination_model->itemFromIndex( index.parent() )->text() );
+        dest_str.append( this->destination_model->
+                          itemFromIndex( index.parent().child(index.row(),0) )->text() );
+
+        source_str.append( this->source_model->itemFromIndex( selected_signal.parent() )->text() );
+        source_str.append( this->source_model->
+                           itemFromIndex( selected_signal.parent().child(selected_signal.row(),0) )->
+                           text() );
+
+        printf( "new mapping between %s %s\n",
+                source_str.toLatin1().constData(),
+                dest_str.toLatin1().constData() );
+
+        this->sendNewMappingRequest( source_str.toLatin1().constData(),
+                                     dest_str.toLatin1().constData() );
+
+    }
+
+}
+
+void Form::sendNewMappingRequest( const char* source_signal_path,
+                                  const char* dest_signal_path ) {
+
+    add_new_mapping( source_signal_path, dest_signal_path );
 
 }
 
@@ -190,14 +280,13 @@ void Form::newDoubleClick( ) {
 }
 
 void Form::clearMappingView( ) {
-/*
-    if ( mapping_scene->items().count() == 0 ) {
 
-        return;
-
+    if ( this->selected_source_circle != NULL ) {
+        this->mapping_scene.removeItem( this->selected_source_circle );
     }
-*/
-
+    if ( this->selected_destination_circle != NULL ) {
+        this->mapping_scene.removeItem( this->selected_destination_circle );
+    }
     mapping_scene.clear();
 
 }
@@ -270,6 +359,8 @@ void Form::updateMappingView( ) {
 
                         }
 
+                        source_signal_item_pointer = 0;
+
                     }
 
                     for ( int k = 0;
@@ -286,66 +377,69 @@ void Form::updateMappingView( ) {
 
                         }
 
+                        destination_signal_item_pointer = 0;
+
                     }
 
-                    source_signal_index =
-                            source_model->
-                            indexFromItem( source_signal_item_pointer );
-                    dest_signal_index =
-                            destination_model->
-                            indexFromItem( destination_signal_item_pointer );
-                    source_signal_rect =
-                            source_signal_list->
-                            visualRect( source_signal_index  );
-                    destination_signal_rect =
-                            destination_signal_list->
-                            visualRect( dest_signal_index  );
+                    if ( source_signal_item_pointer != 0 &&
+                         destination_signal_item_pointer != 0 ) {
 
-                    if ( source_signal_rect.topLeft().y() == 0 ) {
+                        source_signal_index =
+                                source_model->
+                                indexFromItem( source_signal_item_pointer );
+                        dest_signal_index =
+                                destination_model->
+                                indexFromItem( destination_signal_item_pointer );
+
+                        source_signal_item_pointer = 0;
+                        destination_signal_item_pointer = 0;
 
                         source_signal_rect =
                                 source_signal_list->
-                                visualRect( source_signal_index.parent() );
-
-                    }
-
-                    if ( destination_signal_rect.topLeft().y() == 0 ) {
-
+                                visualRect( source_signal_index  );
                         destination_signal_rect =
                                 destination_signal_list->
-                                visualRect( dest_signal_index.parent() );
+                                visualRect( dest_signal_index  );
+
+                        if ( source_signal_rect.topLeft().y() == 0 ) {
+
+                            source_signal_rect =
+                                    source_signal_list->
+                                    visualRect( source_signal_index.parent() );
+
+                        }
+
+                        if ( destination_signal_rect.topLeft().y() == 0 ) {
+
+                            destination_signal_rect =
+                                    destination_signal_list->
+                                    visualRect( dest_signal_index.parent() );
+
+                        }
+
+                        source_vertical_offset =
+                                source_signal_list->header()->height() +
+                                ( source_signal_rect.height() / 2 ) + 1;
+                        dest_vertical_offset =
+                                destination_signal_list->header()->height() +
+                                ( destination_signal_rect.height() / 2 ) + 1;
+
+                        printf( "source signal y %d + offset %d\n",
+                                source_signal_rect.topLeft().y(),
+                                source_vertical_offset );
+                        printf( "destination signal y %d + offset %d\n",
+                                destination_signal_rect.topLeft().y(),
+                                dest_vertical_offset );
+
+                        this->mapping_scene.addLine( 0,
+                                         source_vertical_offset +
+                                         source_signal_rect.topLeft().y(),
+                                         graphics_view_2->width(),
+                                         dest_vertical_offset +
+                                         destination_signal_rect.topLeft().y(),
+                                         pen_width );
 
                     }
-
-                    source_vertical_offset =
-                            source_signal_list->header()->height() +
-                            ( source_signal_rect.height() / 2 ) + 1;
-                    dest_vertical_offset =
-                            destination_signal_list->header()->height() +
-                            ( destination_signal_rect.height() / 2 ) + 1;
-
-                    printf( "source signal y %d + offset %d\n",
-                            source_signal_rect.topLeft().y(),
-                            source_vertical_offset );
-                    printf( "destination signal y %d + offset %d\n",
-                            destination_signal_rect.topLeft().y(),
-                            dest_vertical_offset );
-
-                    this->mapping_scene.addLine( 0,
-                                     source_vertical_offset +
-                                     source_signal_rect.topLeft().y(),
-                                     graphics_view_2->width(),
-                                     dest_vertical_offset +
-                                     destination_signal_rect.topLeft().y(),
-                                     pen_width );
-                    /*
-                    this->graphics_view_2->
-                            viewport()->setFixedSize( graphics_view_2->width(),
-                                                      graphics_view_2->height() );
-                    this->graphics_view_2->setSceneRect( 0, 0,
-                                                      graphics_view_2->width(),
-                                                      graphics_view_2->height() );
-                                                      */
 
                 }
 
@@ -650,6 +744,24 @@ void Form::addNewMapping( mapper_db_mapping record ) {
     parsed_str[1].prepend("/");
     parsed_str_2[1].prepend("/");
 
+    for ( QStringList::iterator it = parsed_str.begin() + 2;
+          it != parsed_str.end();
+          it++ ) {
+
+        it->prepend("/");
+        parsed_str[1].append( (*it) );
+
+    }
+
+    for ( QStringList::iterator it = parsed_str_2.begin() + 2;
+            it != parsed_str_2.end();
+            it++ ) {
+
+        it->prepend("/");
+        parsed_str_2[1].append( (*it) );
+
+    }
+
     Form::device_search_term =
             parsed_str[0].toLatin1().constData();
     source_it = std::find_if( this->node_pointer_list.begin(),
@@ -665,64 +777,89 @@ void Form::addNewMapping( mapper_db_mapping record ) {
                               parsed_str[1].toLatin1().constData(),
                               parsed_str_2[1].toLatin1().constData() );
 
+    this->updateMappingView();
+
 }
 
 void Form::addNewSignal( mapper_db_signal record ) {
 
     std::list<Node*>::iterator it;
 
+    /*
     printf( "vijay searching for %s to add signal\n",
             record->device_name );
+            */
     Form::device_search_term = record->device_name;
 
     it = std::find_if( this->node_pointer_list.begin(),
                         this->node_pointer_list.end(),
                         IsNameMatch );
-
+    /*
     printf( "vijay found %s with %d rows\n",
             (*it)->name,
             (*it)->source_model_list[0]->rowCount() );
+            */
+
+    printf( "vijay is adding %s %s, which is a %d\n",
+            record->device_name,
+            record->name,
+            record->is_output );
 
     std::stringstream out;
-    //(*it)->source_model_list[0]->setColumnCount( 3 );
+    int row_count_before_add;
+    if ( record->is_output == 1 ) {
 
-    int row_count_before_add = (*it)->source_model_list[0]->rowCount();
+        row_count_before_add =
+                (*it)->source_model_list[0]->rowCount();
 
-    QStandardItem* source_item_1_child = new QStandardItem;
-    source_item_1_child->setText( record->name );
-    (*it)->source_model_list[0]->setChild( row_count_before_add,
-                                           0,
-                                           source_item_1_child );
-    QStandardItem* destination_item_1_child = new QStandardItem;
-    destination_item_1_child->setText( record->name );
-    (*it)->destination_model_list[0]->setChild( row_count_before_add,
-                                                0,
-                                                destination_item_1_child );
+        QStandardItem* source_item_1_child = new QStandardItem;
+        source_item_1_child->setText( record->name );
+        (*it)->source_model_list[0]->setChild( row_count_before_add,
+                                               0,
+                                               source_item_1_child );
+        QStandardItem* source_item_2_child = new QStandardItem;
+        out << record->type;
+        source_item_2_child->setText( out.str().c_str() );
+        (*it)->source_model_list[0]->setChild( row_count_before_add,
+                                               1,
+                                               source_item_2_child );
 
-    QStandardItem* source_item_2_child = new QStandardItem;
-    out << record->type;
-    source_item_2_child->setText( out.str().c_str() );
-    (*it)->source_model_list[0]->setChild( row_count_before_add,
-                                           1,
-                                           source_item_2_child );
-    QStandardItem* destination_item_2_child = new QStandardItem;
-    destination_item_2_child->setText( out.str().c_str() );
-    (*it)->destination_model_list[0]->setChild( row_count_before_add,
-                                                1,
-                                                destination_item_2_child );
+        QStandardItem* source_item_3_child = new QStandardItem;
+        out.str( "" );
+        out << record->length;
+        source_item_3_child->setText( out.str().c_str() );
+        (*it)->source_model_list[0]->setChild( row_count_before_add,
+                                               2,
+                                               source_item_3_child );
 
-    QStandardItem* source_item_3_child = new QStandardItem;
-    out.str( "" );
-    out << record->length;
-    source_item_3_child->setText( out.str().c_str() );
-    (*it)->source_model_list[0]->setChild( row_count_before_add,
-                                           2,
-                                           source_item_3_child );
-    QStandardItem* destination_item_3_child = new QStandardItem;
-    destination_item_3_child->setText( out.str().c_str() );
-    (*it)->destination_model_list[0]->setChild( row_count_before_add,
-                                                2,
-                                                destination_item_3_child );
+    } else if ( record->is_output == 0 ) {
+
+        row_count_before_add =
+                (*it)->destination_model_list[0]->rowCount();
+
+        QStandardItem* destination_item_1_child = new QStandardItem;
+        destination_item_1_child->setText( record->name );
+        (*it)->destination_model_list[0]->setChild( row_count_before_add,
+                                                    0,
+                                                    destination_item_1_child );
+
+
+        QStandardItem* destination_item_2_child = new QStandardItem;
+        out.str( "" );
+        out << record->length;
+        destination_item_2_child->setText( out.str().c_str() );
+        (*it)->destination_model_list[0]->setChild( row_count_before_add,
+                                                    1,
+                                                    destination_item_2_child );
+
+
+        QStandardItem* destination_item_3_child = new QStandardItem;
+        destination_item_3_child->setText( out.str().c_str() );
+        (*it)->destination_model_list[0]->setChild( row_count_before_add,
+                                                    2,
+                                                    destination_item_3_child );
+
+    }
 
 }
 

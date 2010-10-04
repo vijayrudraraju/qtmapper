@@ -9,11 +9,6 @@ class MapperGraphicsScene : public QGraphicsScene
 
 public:
     explicit MapperGraphicsScene(QObject *parent = 0);
-    void setSelectionArea( const QPainterPath &path,
-                           const QTransform &deviceTransform );
-    void setSelectionArea( const QPainterPath &path,
-                           Qt::ItemSelectionMode mode,
-                           const QTransform &deviceTransform);
 
 signals:
 

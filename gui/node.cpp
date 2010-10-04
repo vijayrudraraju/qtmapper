@@ -14,6 +14,7 @@ Node::Node(QGraphicsView *graphWidget)
 
     is_destination = false;
     is_source = false;
+    conflict_flag = 0;
 
     setFlag(ItemIsSelectable);
     setFlag(ItemIsFocusable);

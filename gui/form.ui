@@ -54,6 +54,9 @@
        <property name="spacing">
         <number>0</number>
        </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QTabWidget" name="selection_mode_toggle">
          <property name="currentIndex">
@@ -144,71 +147,162 @@
       <attribute name="title">
        <string>edit</string>
       </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <property name="spacing">
         <number>0</number>
        </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
        <item>
-        <widget class="QTreeView" name="source_signal_list">
-         <property name="minimumSize">
-          <size>
-           <width>300</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
-         <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
-         </property>
-         <property name="indentation">
-          <number>5</number>
-         </property>
-         <property name="rootIsDecorated">
-          <bool>false</bool>
-         </property>
+        <widget class="QWidget" name="widget_2" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="margin">
+           <number>2</number>
+          </property>
+          <item>
+           <widget class="QToolButton" name="toolButton_2">
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="text">
+             <string>Make Mapping</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="toolButton">
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="text">
+             <string>Delete Mapping</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QGraphicsView" name="graphics_view_2">
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
-         </property>
-         <property name="verticalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="horizontalScrollBarPolicy">
-          <enum>Qt::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="renderHints">
-          <set>QPainter::Antialiasing|QPainter::TextAntialiasing</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTreeView" name="destination_signal_list">
+        <widget class="QWidget" name="widget" native="true">
          <property name="minimumSize">
           <size>
-           <width>300</width>
-           <height>0</height>
+           <width>0</width>
+           <height>100</height>
           </size>
          </property>
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
-         </property>
-         <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
-         </property>
-         <property name="indentation">
-          <number>5</number>
-         </property>
-         <property name="rootIsDecorated">
-          <bool>false</bool>
-         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="margin">
+           <number>2</number>
+          </property>
+          <item>
+           <widget class="QTreeView" name="source_signal_list">
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QTreeView::item:selected {
+	background: #999922;
+}</string>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+            <property name="alternatingRowColors">
+             <bool>false</bool>
+            </property>
+            <property name="indentation">
+             <number>13</number>
+            </property>
+            <property name="rootIsDecorated">
+             <bool>true</bool>
+            </property>
+            <property name="itemsExpandable">
+             <bool>true</bool>
+            </property>
+            <property name="expandsOnDoubleClick">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGraphicsView" name="graphics_view_2">
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="renderHints">
+             <set>QPainter::Antialiasing|QPainter::TextAntialiasing</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeView" name="destination_signal_list">
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::NoFocus</enum>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+            <property name="indentation">
+             <number>13</number>
+            </property>
+            <property name="rootIsDecorated">
+             <bool>true</bool>
+            </property>
+            <property name="expandsOnDoubleClick">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>

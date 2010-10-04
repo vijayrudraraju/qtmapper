@@ -21,6 +21,8 @@ public:
     explicit Form(QWidget *parent = 0);
 
     void addNode();
+    void sendNewMappingRequest( const char* source_signal_path,
+                                const char* dest_signal_path );
 
     //int (*createTestDeviceFunction)();
     void addNewDevice( const char* name,
@@ -56,7 +58,8 @@ public slots:
     void updateReleasedNode( Node* reference );
     void newDoubleClick( );
 
-    void beginToDrawMapping( QModelIndex index );
+    void beginToDrawMapping( const QModelIndex& index );
+    void finishDrawingMapping( const QModelIndex& index );
 
 protected:
     //void keyPressEvent(QKeyEvent *event);
@@ -89,6 +92,11 @@ private:
 
     QStandardItemModel* source_model;
     QStandardItemModel* destination_model;
+
+    QGraphicsItem* selected_source_circle;
+    QGraphicsItem* selected_destination_circle;
+
+    QPersistentModelIndex selected_signal;
 
     int default_x;
     int default_y;
