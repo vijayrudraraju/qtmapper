@@ -9,13 +9,13 @@ UI_DIR = .
 FORMS = form.ui
 
 HEADERS += form.h \
+link.h \
 node.h \
     mappergraphicsview.h \
-    mappergraphicsscene.h \
-    link.h
+    mappergraphicsscene.h
 
 SOURCES += form.cpp \
+link.cpp \
 node.cpp \
     mappergraphicsview.cpp \
-    mappergraphicsscene.cpp \
-    link.cpp
+    mappergraphicsscene.cpp

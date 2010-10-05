@@ -1,12 +1,3 @@
-#include <QGraphicsScene>
-#include <QGraphicsSceneMouseEvent>
-#include <QGraphicsView>
-#include <QPainter>
-#include <QStyleOption>
-
-#include <cstdio>
-
-#include "edge.h"
 #include "node.h"
 
 Node::Node(QGraphicsView *graphWidget)
@@ -62,6 +53,7 @@ void Node::addMapping( Node* destination,
 
 }
 
+/*
 bool Node::advance() {
 
     if (newPos == pos())
@@ -70,7 +62,7 @@ bool Node::advance() {
     setPos(newPos);
     return true;
 
-}
+}*/
 
 QRectF Node::boundingRect() const {
 
@@ -80,6 +72,7 @@ QRectF Node::boundingRect() const {
 
 }
 
+/*
 QPainterPath Node::shape() const {
 
     QPainterPath path;
@@ -87,29 +80,30 @@ QPainterPath Node::shape() const {
     return path;
 
 }
+*/
 
 void Node::paint( QPainter *painter,
                  const QStyleOptionGraphicsItem *option,
-                 QWidget * ) {
+                 QWidget *widget ) {
 
     //if ( option->state & QStyle::State_Selected ) {
     if ( is_source ) {
 
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::yellow);
-        painter->drawEllipse(-7, -7, 20, 20);
+        painter->drawEllipse(-10, -10, 20, 20);
 
     } else if ( is_destination ) {
 
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::blue);
-        painter->drawEllipse(-7, -7, 20, 20);
+        painter->drawEllipse(-10, -10, 20, 20);
 
     } else {
 
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::darkGray);
-        painter->drawEllipse(-7, -7, 20, 20);
+        painter->drawEllipse(-10, -10, 20, 20);
 
     }
     /*

@@ -11,6 +11,7 @@
 #include "ui_form.h"
 #include "edge.h"
 #include "node.h"
+#include "link.h"
 #include "mappergraphicsscene.h"
 
 class Form : public QWidget, private Ui::Form {
@@ -49,6 +50,8 @@ public slots:
 
     void updateMappingView( );
 
+    void updatePressedLink( Link* reference );
+
     void updateSelectedNodes( bool is_selected );
     void updateSelectionMode( int index );
     void updateEditSelectionMode( int index );
@@ -80,6 +83,7 @@ private:
 
     int timerId;
     std::list <Node*> node_pointer_list;
+    std::list <Link*> displayed_mapping_list;
     MapperGraphicsScene* scene;
     QGraphicsScene mapping_scene;
 

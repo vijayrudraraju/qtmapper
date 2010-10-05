@@ -109,6 +109,12 @@ Form::Form( QWidget *parent ) :
 
 void Form::beginToDrawMapping( const QModelIndex& index ) {
 
+    if ( this->deleteButton->isChecked() ) {
+
+        return;
+
+    }
+
     QPen pen_color;
     pen_color.setColor( Qt::yellow );
     QBrush brush_color;
@@ -144,6 +150,12 @@ void Form::beginToDrawMapping( const QModelIndex& index ) {
 }
 
 void Form::finishDrawingMapping( const QModelIndex& index ) {
+
+    if ( this->deleteButton->isChecked() ) {
+
+        return;
+
+    }
 
     QString source_str = "";
     QString dest_str = "";
@@ -201,7 +213,7 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
 void Form::sendNewMappingRequest( const char* source_signal_path,
                                   const char* dest_signal_path ) {
 
-    add_new_mapping( source_signal_path, dest_signal_path );
+    mapper_db_create_mapping( source_signal_path, dest_signal_path );
 
 }
 
@@ -288,10 +300,14 @@ void Form::clearMappingView( ) {
         this->mapping_scene.removeItem( this->selected_destination_circle );
     }
     mapping_scene.clear();
+    this->displayed_mapping_list.clear();
 
 }
 
 void Form::updateMappingView( ) {
+
+    Link* new_link_pointer;
+    QString temp_str = "";
 
     QStandardItem* source_item_pointer;
     QStandardItem* destination_item_pointer;
@@ -391,9 +407,6 @@ void Form::updateMappingView( ) {
                                 destination_model->
                                 indexFromItem( destination_signal_item_pointer );
 
-                        source_signal_item_pointer = 0;
-                        destination_signal_item_pointer = 0;
-
                         source_signal_rect =
                                 source_signal_list->
                                 visualRect( source_signal_index  );
@@ -431,13 +444,67 @@ void Form::updateMappingView( ) {
                                 destination_signal_rect.topLeft().y(),
                                 dest_vertical_offset );
 
-                        this->mapping_scene.addLine( 0,
-                                         source_vertical_offset +
-                                         source_signal_rect.topLeft().y(),
-                                         graphics_view_2->width(),
-                                         dest_vertical_offset +
-                                         destination_signal_rect.topLeft().y(),
-                                         pen_width );
+
+                        new_link_pointer = new Link( this->graphics_view_2, &mapping_scene );
+                        if ( source_vertical_offset +
+                             source_signal_rect.topLeft().y() <=
+                             dest_vertical_offset +
+                             destination_signal_rect.topLeft().y() ) {
+
+                            new_link_pointer->is_inverted = false;
+                            new_link_pointer->setPos( 0,
+                                        source_vertical_offset +
+                                        source_signal_rect.topLeft().y() );
+                            new_link_pointer->line_width =
+                                    graphics_view_2->width();
+                            new_link_pointer->line_height =
+                                    (dest_vertical_offset +
+                                    destination_signal_rect.topLeft().y()) -
+                                    (source_vertical_offset +
+                                    source_signal_rect.topLeft().y());
+
+                        } else {
+
+                            new_link_pointer->is_inverted = true;
+                            new_link_pointer->setPos( 0,
+                                        dest_vertical_offset +
+                                        destination_signal_rect.topLeft().y() );
+                            new_link_pointer->line_width =
+                                    graphics_view_2->width();
+                            new_link_pointer->line_height =
+                                    (source_vertical_offset +
+                                    source_signal_rect.topLeft().y()) -
+                                    (dest_vertical_offset +
+                                    destination_signal_rect.topLeft().y());
+
+                        }
+
+                        temp_str = "";
+                        temp_str.append( source_signal_item_pointer->parent()->text() );
+                        temp_str.append( source_signal_item_pointer->text() );
+                        strcpy( new_link_pointer->source_signal_name,
+                                temp_str.toLatin1().constData() );
+
+                        temp_str = "";
+                        temp_str.append( destination_signal_item_pointer->parent()->text() );
+                        temp_str.append( destination_signal_item_pointer->text() );
+                        strcpy( new_link_pointer->dest_signal_name,
+                                temp_str.toLatin1().constData() );
+
+
+                        printf( "vijaydebug %s %s\n",
+                                new_link_pointer->source_signal_name,
+                                new_link_pointer->dest_signal_name );
+
+                        this->displayed_mapping_list.push_back( new_link_pointer );
+                        QObject::connect( this->displayed_mapping_list.back(),
+                                          SIGNAL(linkPressed(Link*)),
+                                          this,
+                                          SLOT(updatePressedLink(Link*)));
+                        mapping_scene.addItem(new_link_pointer);
+
+                        source_signal_item_pointer = 0;
+                        destination_signal_item_pointer = 0;
 
                     }
 
@@ -449,6 +516,7 @@ void Form::updateMappingView( ) {
 
     }
 
+    /*
     printf( "updateMappingView: graphics_view_2->width %d\t, graphics_view_2->height %d\n",
             graphics_view_2->width(),
             graphics_view_2->height() );
@@ -464,6 +532,7 @@ void Form::updateMappingView( ) {
     printf( "updateMappingView: mapping_scene->sceneRect->width %f\t, mapping_scene->sceneRect->height %f\n\n",
             mapping_scene.sceneRect().width(),
             mapping_scene.sceneRect().height() );
+            */
 }
 
 void Form::addNodeToDestinationView( Node* the_node ) {
@@ -531,10 +600,22 @@ void Form::removeNodeFromSourceView( Node* the_node ) {
 
 }
 
+void Form::updatePressedLink( Link *reference ) {
+
+    printf("updatePressedLink\n");
+
+}
+
 void Form::updatePressedNode( Node* reference ) {
 
-        printf( "form says -> pressed node %s\n", reference->name );
-        this->active_node_name = reference->name;
+    if ( this->makeButton->isChecked() ) {
+
+        return;
+
+    }
+
+    printf( "form says -> pressed node %s\n", reference->name );
+    this->active_node_name = reference->name;
 
 }
 

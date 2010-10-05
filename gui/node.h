@@ -1,14 +1,20 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include <QGraphicsItem>
+#include <QGraphicsScene>
+#include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
+#include <QPainter>
+#include <QStyleOption>
+
+#include <cstdio>
+
+#include <QGraphicsItem>
 #include <QLabel>
 #include <QStandardItem>
 
 //#include <mapper/mapper.h>
 
-class Link;
 class Form;
 class Node;
 
@@ -39,7 +45,7 @@ public:
     bool advance();
 
     QRectF boundingRect() const;
-    QPainterPath shape() const;
+    //QPainterPath shape() const;
     void paint(QPainter* painter,
                const QStyleOptionGraphicsItem* option,
                QWidget* widget);

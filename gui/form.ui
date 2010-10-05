@@ -38,7 +38,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="elideMode">
       <enum>Qt::ElideLeft</enum>
@@ -164,7 +164,7 @@
            <number>2</number>
           </property>
           <item>
-           <widget class="QToolButton" name="toolButton_2">
+           <widget class="QToolButton" name="makeButton">
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
@@ -186,7 +186,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton">
+           <widget class="QToolButton" name="deleteButton">
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
