@@ -23,7 +23,7 @@ int default_port = 9000;
 
 int setup_qtmapper(  ) {
 
-    qtmapper = mdev_new( "qtmapper", default_port );
+    qtmapper = mdev_new( "qtmapper", default_port, 0 );
 
     if ( !qtmapper ) {
 
