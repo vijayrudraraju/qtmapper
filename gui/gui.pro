@@ -12,7 +12,8 @@ HEADERS += form.h \
 link.h \
 node.h \
     mappergraphicsview.h \
-    mappergraphicsscene.h
+    mappergraphicsscene.h \
+    utility.h
 
 SOURCES += form.cpp \
 link.cpp \

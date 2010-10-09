@@ -18,6 +18,17 @@ Node::Node(QGraphicsView *graphWidget)
     name_item.setPos( 23, 23 );
     name_item.setText( "test" );
 
+    inputs = 0;
+    outputs = 0;
+
+    input_num_item.setParentItem( this );
+    input_num_item.setPos( 23, -23 );
+    input_num_item.setText( "inputs " + QString::number(inputs) );
+
+    output_num_item.setParentItem( this );
+    output_num_item.setPos( 23, 0 );
+    output_num_item.setText( "outputs " + QString::number(outputs) );
+
 }
 
 Node::~Node(  ) {
@@ -85,6 +96,9 @@ QPainterPath Node::shape() const {
 void Node::paint( QPainter *painter,
                  const QStyleOptionGraphicsItem *option,
                  QWidget *widget ) {
+
+    input_num_item.setText( "inputs " + QString::number(inputs) );
+    output_num_item.setText( "outputs " + QString::number(outputs) );
 
     //if ( option->state & QStyle::State_Selected ) {
     if ( is_source ) {

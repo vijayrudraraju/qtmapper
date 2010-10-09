@@ -24,6 +24,8 @@ public:
     int line_width;
     int line_height;
     bool is_inverted;
+    bool is_deletable;
+    const static int pen_width = 2;
 
 signals:
     void linkPressed( Link* reference );
@@ -31,9 +33,12 @@ signals:
 private:
     QGraphicsView* view;
     QGraphicsScene* scene;
+    bool hover_flag;
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
 
 };

@@ -62,7 +62,11 @@ public:
     bool is_source;
     bool is_destination;
     int conflict_flag; //-1 => source, 0 => no confict, 1 => destination
+
     const char* name;
+    int inputs;
+    int outputs;
+
     std::list<qt_mapping> destination_list;
 
 signals:
@@ -84,6 +88,8 @@ private:
     QGraphicsView *graph;
 
     QGraphicsSimpleTextItem name_item;
+    QGraphicsSimpleTextItem input_num_item;
+    QGraphicsSimpleTextItem output_num_item;
 
 };
 

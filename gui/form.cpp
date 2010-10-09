@@ -1,4 +1,5 @@
 #include "form.h"
+#include "utility.h"
 
 #include <QDebug>
 #include <QGraphicsScene>
@@ -12,8 +13,8 @@ Form::Form( QWidget *parent ) :
 
     setupUi( this );
 
-    default_x = 0;
-    default_y = 100;
+    //default_x = 0;
+    //default_y = 0;
 
     timer = new QTimer( this );
     QObject::connect( timer, SIGNAL(timeout()), this, SLOT(update()) );
@@ -33,14 +34,11 @@ Form::Form( QWidget *parent ) :
     graphics_view->scale( qreal(0.7), qreal(0.7) );
     graphics_view->setMinimumSize( 600, 300 );
     graphics_view->setAlignment( Qt::AlignLeft|Qt::AlignTop );
-    graphics_view->setSceneRect( -100, 0, 1000, 1000 );
+    graphics_view->setSceneRect( -50, -50, 2000, 1000 );
 
     graphics_view_2->setScene( &mapping_scene );
     graphics_view_2->installEventFilter( this );
     graphics_view_2->setAlignment( Qt::AlignLeft|Qt::AlignTop );
-
-    printf( "graphics_view_2->width %d, graphics_view_2->height %d\n",
-            graphics_view_2->width(), graphics_view_2->height() );
 
     QStringList header_labels;
     header_labels << "name" << "host" << "port" << "can alias?";
@@ -59,8 +57,6 @@ Form::Form( QWidget *parent ) :
     destination_list->setMinimumSize( 600, 300 );
 
     source_signal_list->setModel( source_model );
-    //source_signal_item_delegate = new MapperItemDelegate( source_model );
-    //source_signal_list->setItemDelegate( source_signal_item_delegate );
     destination_signal_list->setModel( destination_model );
 
     this->source_list->setColumnHidden( 4, true );
@@ -74,25 +70,24 @@ Form::Form( QWidget *parent ) :
     this->selected_source_circle = NULL;
     this->selected_destination_circle = NULL;
 
+    connect( this->mode_picker, SIGNAL(currentIndexChanged(int)),
+             this, SLOT(updateVisualizationMode(int)) );
+
     connect( selection_mode_toggle, SIGNAL(currentChanged(int)),
              this, SLOT(updateSelectionMode(int)) );
+
     connect( edit_mode_toggle, SIGNAL(currentChanged(int)),
              this, SLOT(updateEditSelectionMode(int)) );
+
     connect( graphics_view, SIGNAL(mouseStateChanged(bool)),
             this, SLOT(updateMouseState(bool)) );
-    /*
-    connect( graphics_view, SIGNAL(mouseDoubleClick( )),
-            this, SLOT(newDoubleClick( )) );
-    */
+
 
     connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
              this, SLOT(beginToDrawMapping(QModelIndex)) );
     connect( this->destination_signal_list, SIGNAL(clicked(QModelIndex)),
              this, SLOT(finishDrawingMapping(QModelIndex)) );
-    /*
-    connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
-             this, SLOT(beginToDrawMapping(QModelIndex)) );
-             */
+
 
     connect( this->destination_signal_list, SIGNAL(collapsed(QModelIndex)),
              this, SLOT(updateMappingView()) );
@@ -104,7 +99,50 @@ Form::Form( QWidget *parent ) :
              this, SLOT(updateMappingView()) );
 
 
+    connect( this->deleteButton, SIGNAL(toggled(bool)),
+             this, SLOT(updateDeleteButtonState(bool)) );
+
+
+    QString picker_str = "cluster";
+    this->mode_picker->addItem(picker_str);
+    picker_str = "inputs/outputs";
+    this->x_param_picker->addItem(picker_str);
+
     setWindowTitle( tr("libmapper monitor") );
+}
+
+void Form::updateIsDeletable( bool checked ) {
+
+    if ( !checked ) {
+
+        for ( std::list<Link*>::iterator it =
+                this->displayed_mapping_list.begin();
+                it != this->displayed_mapping_list.end();
+                it++ ) {
+
+            (*it)->is_deletable = false;
+
+        }
+
+    } else {
+
+        for ( std::list<Link*>::iterator it =
+                this->displayed_mapping_list.begin();
+                it != this->displayed_mapping_list.end();
+                it++ ) {
+
+            (*it)->is_deletable = true;
+
+        }
+
+    }
+
+}
+
+void Form::updateDeleteButtonState( bool checked ) {
+
+    this->updateIsDeletable( checked );
+
 }
 
 void Form::beginToDrawMapping( const QModelIndex& index ) {
@@ -221,7 +259,6 @@ void Form::update(  ) {
 
     mdev_poll( this->qtmapper, 0 );
     QWidget::update();
-    //updateMappingView();
 
     //this->destination_signal_list->resizeColumnToContents( 0 );
     this->destination_signal_list->setColumnWidth( 0, 180 );
@@ -432,10 +469,10 @@ void Form::updateMappingView( ) {
 
                         source_vertical_offset =
                                 source_signal_list->header()->height() +
-                                ( source_signal_rect.height() / 2 ) + 1;
+                                ( source_signal_rect.height() / 2 ) + Link::pen_width;
                         dest_vertical_offset =
                                 destination_signal_list->header()->height() +
-                                ( destination_signal_rect.height() / 2 ) + 1;
+                                ( destination_signal_rect.height() / 2 ) + Link::pen_width;
 
                         printf( "source signal y %d + offset %d\n",
                                 source_signal_rect.topLeft().y(),
@@ -516,6 +553,8 @@ void Form::updateMappingView( ) {
 
     }
 
+    this->updateIsDeletable( this->deleteButton->isChecked() );
+
     /*
     printf( "updateMappingView: graphics_view_2->width %d\t, graphics_view_2->height %d\n",
             graphics_view_2->width(),
@@ -533,6 +572,7 @@ void Form::updateMappingView( ) {
             mapping_scene.sceneRect().width(),
             mapping_scene.sceneRect().height() );
             */
+
 }
 
 void Form::addNodeToDestinationView( Node* the_node ) {
@@ -602,17 +642,15 @@ void Form::removeNodeFromSourceView( Node* the_node ) {
 
 void Form::updatePressedLink( Link *reference ) {
 
-    printf("updatePressedLink\n");
+    printf("updatePressedLink source %s dest %s\n",
+           reference->source_signal_name,
+           reference->dest_signal_name );
+    mapper_db_destroy_mapping( reference->source_signal_name,
+                               reference->dest_signal_name );
 
 }
 
 void Form::updatePressedNode( Node* reference ) {
-
-    if ( this->makeButton->isChecked() ) {
-
-        return;
-
-    }
 
     printf( "form says -> pressed node %s\n", reference->name );
     this->active_node_name = reference->name;
@@ -942,6 +980,101 @@ void Form::addNewSignal( mapper_db_signal record ) {
 
     }
 
+    this->changeVisualizationMode( this->mode_picker->currentIndex() );
+
+}
+
+void Form::updateVisualizationMode( int mode_index ) {
+
+    this->changeVisualizationMode( mode_index );
+
+}
+
+void Form::changeVisualizationMode( int current_mode ) {
+
+    if ( current_mode == 0 ) {
+
+        int cluster_1_x = 0;
+        int cluster_1_y = 0;
+        int cluster_2_x = 300;
+        int cluster_2_y = 0;
+        int cluster_3_x = 600;
+        int cluster_3_y = 0;
+
+        std::list<Node*> cluster_1;
+        std::list<Node*> cluster_2;
+        std::list<Node*> cluster_3;
+
+        for ( std::list<Node*>::iterator it =
+                this->node_pointer_list.begin();
+              it != this->node_pointer_list.end();
+              it++ ) {
+
+            printf( "name: %s, source rows: %d, dest rows: %d\n",
+                    (*it)->name,
+                    (*it)->source_model_list[0]->rowCount(),
+                    (*it)->destination_model_list[0]->rowCount() );
+
+            if ( (*it)->source_model_list[0]->rowCount() == 0 &&
+                 (*it)->destination_model_list[0]->rowCount() == 0 ) {
+
+                cluster_3.push_back((*it));
+                continue;
+
+            }
+
+            if ( (*it)->source_model_list[0]->rowCount() >=
+                 (*it)->destination_model_list[0]->rowCount() ) {
+
+                cluster_1.push_back((*it));
+
+            } else {
+
+                cluster_2.push_back((*it));
+
+            }
+
+            (*it)->inputs = (*it)->source_model_list[0]->rowCount();
+            (*it)->outputs = (*it)->destination_model_list[0]->rowCount();
+            (*it)->update();
+
+        }
+
+
+        cluster_1.sort( nodeSortOutputsFunction );
+        cluster_2.sort( nodeSortInputsFunction );
+
+        for ( std::list<Node*>::iterator it =
+                cluster_1.begin();
+                it != cluster_1.end();
+                it++ ) {
+
+            (*it)->setPos( cluster_1_x,
+                           cluster_1_y );
+            cluster_1_y += 70;
+
+        } for ( std::list<Node*>::iterator it =
+                cluster_2.begin();
+                it != cluster_2.end();
+                it++ ) {
+
+            (*it)->setPos( cluster_2_x,
+                           cluster_2_y );
+            cluster_2_y += 70;
+
+        } for ( std::list<Node*>::iterator it =
+                cluster_3.begin();
+                it != cluster_3.end();
+                it++ ) {
+
+            (*it)->setPos( cluster_3_x,
+                           cluster_3_y );
+            cluster_3_y += 70;
+
+        }
+
+    }
+
 }
 
 void Form::addNewDevice( const char* name,
@@ -953,12 +1086,12 @@ void Form::addNewDevice( const char* name,
     std::stringstream out;
     Node* new_device = new Node(graphics_view);
 
-    printf( "addNewDevice(  ) %d %d \n", default_x, default_y );
+    printf( "addNewDevice(  ) \n" );
 
     this->node_pointer_list.push_back( new_device );
     this->node_pointer_list.back()->setName( name );
     scene->addItem(this->node_pointer_list.back());
-    this->node_pointer_list.back()->setPos( default_x, default_y );
+    //this->node_pointer_list.back()->setPos( default_x, default_y );
 
     QStandardItem* source_item_1 = new QStandardItem;
     QStandardItem* source_item_2 = new QStandardItem;
@@ -1024,6 +1157,7 @@ void Form::addNewDevice( const char* name,
                       this,
                       SLOT(updateReleasedNode(Node*)));
 
+    /*
     default_y += 70;
     if ( default_y >= 400 ) {
 
@@ -1031,5 +1165,8 @@ void Form::addNewDevice( const char* name,
         default_x += 100;
 
     }
+    */
+
+    this->changeVisualizationMode( this->mode_picker->currentIndex() );
 
 }

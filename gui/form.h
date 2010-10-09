@@ -39,6 +39,8 @@ public:
     void addDbMappingCallbackFunction( mapping_callback_func* f );
     void setMapperDevice( mapper_device device );
 
+    void updateIsDeletable( bool checked );
+
     static bool IsNameMatch( Node* i );
 
     static const char* device_search_term;
@@ -49,7 +51,9 @@ public slots:
     void update();
 
     void updateMappingView( );
+    void updateVisualizationMode( int mode_index );
 
+    void updateDeleteButtonState( bool checked );
     void updatePressedLink( Link* reference );
 
     void updateSelectedNodes( bool is_selected );
@@ -74,6 +78,8 @@ protected:
     bool eventFilter( QObject* obj, QEvent* event );
 
 private:
+    void changeVisualizationMode( int current_mode );
+
     void addNodeToDestinationView( Node* the_node );
     void removeNodeFromDestinationView( Node* the_node );
     void addNodeToSourceView( Node* the_node );
@@ -88,6 +94,7 @@ private:
     QGraphicsScene mapping_scene;
 
     QTimer* timer;
+
     device_callback_func* db_device_callback_function;
     signal_callback_func* db_signal_callback_function;
     link_callback_func* db_link_callback_function;
