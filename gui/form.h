@@ -26,11 +26,14 @@ public:
                                 const char* dest_signal_path );
 
     //int (*createTestDeviceFunction)();
+    void removeDevice( const char* name );
     void addNewDevice( const char* name,
                        const char* host,
                        int port,
                        int can_alias );
+    void removeSignal( mapper_db_signal record );
     void addNewSignal( mapper_db_signal record );
+    void removeMapping( mapper_db_mapping record );
     void addNewMapping( mapper_db_mapping record );
 
     void addDbDeviceCallbackFunction( device_callback_func* f );
@@ -41,9 +44,9 @@ public:
 
     void updateIsDeletable( bool checked );
 
-    static bool IsNameMatch( Node* i );
+    //static bool IsNameMatch( Node* i );
 
-    static const char* device_search_term;
+    //static const char* device_search_term;
     //static const char* source_search_term;
     //static const char* destination_search_term;
 

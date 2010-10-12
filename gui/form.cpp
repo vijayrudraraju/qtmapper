@@ -13,9 +13,6 @@ Form::Form( QWidget *parent ) :
 
     setupUi( this );
 
-    //default_x = 0;
-    //default_y = 0;
-
     timer = new QTimer( this );
     QObject::connect( timer, SIGNAL(timeout()), this, SLOT(update()) );
     timer->start( 500 );
@@ -107,6 +104,8 @@ Form::Form( QWidget *parent ) :
     this->mode_picker->addItem(picker_str);
     picker_str = "inputs/outputs";
     this->x_param_picker->addItem(picker_str);
+    picker_str = "# of signals";
+    this->y_param_picker->addItem(picker_str);
 
     setWindowTitle( tr("libmapper monitor") );
 }
@@ -833,10 +832,9 @@ void Form::setMapperDevice( mapper_device device ) {
 
 }
 
-bool Form::IsNameMatch( Node* i ) {
+void Form::removeMapping( mapper_db_mapping record ) {
 
-    //printf( "IsNameMatch %s %s\n", i->name, device_search_term);
-    return !strcmp( i->name, device_search_term );
+
 
 }
 
@@ -881,22 +879,28 @@ void Form::addNewMapping( mapper_db_mapping record ) {
 
     }
 
-    Form::device_search_term =
+    device_search_term =
             parsed_str[0].toLatin1().constData();
     source_it = std::find_if( this->node_pointer_list.begin(),
                         this->node_pointer_list.end(),
-                        IsNameMatch );
-    Form::device_search_term =
+                        isNameMatch );
+    device_search_term =
             parsed_str_2[0].toLatin1().constData();
     destination_it = std::find_if( this->node_pointer_list.begin(),
                         this->node_pointer_list.end(),
-                        IsNameMatch );
+                        isNameMatch );
 
     (*source_it)->addMapping( (*destination_it),
                               parsed_str[1].toLatin1().constData(),
                               parsed_str_2[1].toLatin1().constData() );
 
     this->updateMappingView();
+
+}
+
+void Form::removeSignal( mapper_db_signal record ) {
+
+
 
 }
 
@@ -908,11 +912,11 @@ void Form::addNewSignal( mapper_db_signal record ) {
     printf( "vijay searching for %s to add signal\n",
             record->device_name );
             */
-    Form::device_search_term = record->device_name;
+    device_search_term = record->device_name;
 
     it = std::find_if( this->node_pointer_list.begin(),
                         this->node_pointer_list.end(),
-                        IsNameMatch );
+                        isNameMatch );
     /*
     printf( "vijay found %s with %d rows\n",
             (*it)->name,
@@ -979,6 +983,127 @@ void Form::addNewSignal( mapper_db_signal record ) {
                                                     destination_item_3_child );
 
     }
+
+    this->changeVisualizationMode( this->mode_picker->currentIndex() );
+
+}
+
+void Form::removeDevice( const char* name ) {
+
+    std::list<Node*>::iterator it;
+    device_search_term = name;
+
+    it = std::find_if( this->node_pointer_list.begin(),
+                      this->node_pointer_list.end(),
+                      isNameMatch );
+    scene->removeItem(*it);
+    delete (*it);
+
+    std::remove_if( this->node_pointer_list.begin(),
+                      this->node_pointer_list.end(),
+                      isNameMatch );
+
+    printf( "remove %s\n", name );
+
+    /*
+    for ( std::list<Node*>::iterator it =
+            this->node_pointer_list.begin();
+          it != this->node_pointer_list.end();
+          it++ ) {
+
+        std::list<Node*>::iterator it;
+        device_search_term = record->device_name;
+
+        it = std::find_if( this->node_pointer_list.begin(),
+                          this->node_pointer_list.end(),
+                          isNameMatch );
+
+    }
+    */
+
+    this->changeVisualizationMode( this->mode_picker->currentIndex() );
+
+}
+
+void Form::addNewDevice( const char* name,
+                         const char* host,
+                         int port,
+                         int can_alias ) {
+
+    std::string temp_string;
+    std::stringstream out;
+    Node* new_device = new Node(graphics_view);
+
+    //printf( "addNewDevice(  ) \n" );
+
+    this->node_pointer_list.push_back( new_device );
+    this->node_pointer_list.back()->setName( name );
+    scene->addItem(this->node_pointer_list.back());
+    //this->node_pointer_list.back()->setPos( default_x, default_y );
+
+    QStandardItem* source_item_1 = new QStandardItem;
+    QStandardItem* source_item_2 = new QStandardItem;
+    QStandardItem* source_item_3 = new QStandardItem;
+    QStandardItem* source_item_4 = new QStandardItem;
+    QStandardItem* source_pointer_item = new QStandardItem;
+    source_item_1->setText( name );
+    source_item_2->setText( host );
+    out << port;
+    source_item_3->setText( out.str().c_str() );
+    out.str( "" );
+    out << can_alias;
+    source_item_4->setText( out.str().c_str() );
+    out.str( "" );
+    out << (int)new_device;
+    source_pointer_item->setText( out.str().c_str() );
+    this->node_pointer_list.back()->source_model_list
+            << source_item_1
+            << source_item_2
+            << source_item_3
+            << source_item_4
+            << source_pointer_item;
+    //printf( "pointer int %d\n", (int)new_device );
+
+    QStandardItem* destination_item_1 = new QStandardItem;
+    QStandardItem* destination_item_2 = new QStandardItem;
+    QStandardItem* destination_item_3 = new QStandardItem;
+    QStandardItem* destination_item_4 = new QStandardItem;
+    QStandardItem* destination_pointer_item = new QStandardItem;
+    destination_item_1->setText( name );
+    destination_item_2->setText( host );
+    out.str( "" );
+    out << port;
+    destination_item_3->setText( out.str().c_str() );
+    out.str( "" );
+    out << can_alias;
+    destination_item_4->setText( out.str().c_str() );
+    out.str( "" );
+    out << (int)new_device;
+    destination_pointer_item->setText( out.str().c_str() );
+    this->node_pointer_list.back()->destination_model_list
+            << destination_item_1
+            << destination_item_2
+            << destination_item_3
+            << destination_item_4
+            << destination_pointer_item;
+
+    //printf( "appended row to model with %d %d columns\n",
+    //        this->node_pointer_list.back()->model_list.size(),
+    //        source_model->columnCount() );
+
+    QObject::connect( this->node_pointer_list.back(),
+                         SIGNAL(selectionStateChanged(bool)),
+                         this,
+                         SLOT(updateSelectedNodes(bool)) );
+
+    QObject::connect( this->node_pointer_list.back(),
+                      SIGNAL(nodePressed(Node*)),
+                      this,
+                      SLOT(updatePressedNode(Node*)));
+    QObject::connect( this->node_pointer_list.back(),
+                      SIGNAL(nodeReleased(Node*)),
+                      this,
+                      SLOT(updateReleasedNode(Node*)));
 
     this->changeVisualizationMode( this->mode_picker->currentIndex() );
 
@@ -1074,99 +1199,5 @@ void Form::changeVisualizationMode( int current_mode ) {
         }
 
     }
-
-}
-
-void Form::addNewDevice( const char* name,
-                         const char* host,
-                         int port,
-                         int can_alias ) {
-
-    std::string temp_string;
-    std::stringstream out;
-    Node* new_device = new Node(graphics_view);
-
-    printf( "addNewDevice(  ) \n" );
-
-    this->node_pointer_list.push_back( new_device );
-    this->node_pointer_list.back()->setName( name );
-    scene->addItem(this->node_pointer_list.back());
-    //this->node_pointer_list.back()->setPos( default_x, default_y );
-
-    QStandardItem* source_item_1 = new QStandardItem;
-    QStandardItem* source_item_2 = new QStandardItem;
-    QStandardItem* source_item_3 = new QStandardItem;
-    QStandardItem* source_item_4 = new QStandardItem;
-    QStandardItem* source_pointer_item = new QStandardItem;
-    source_item_1->setText( name );
-    source_item_2->setText( host );
-    out << port;
-    source_item_3->setText( out.str().c_str() );
-    out.str( "" );
-    out << can_alias;
-    source_item_4->setText( out.str().c_str() );
-    out.str( "" );
-    out << (int)new_device;
-    source_pointer_item->setText( out.str().c_str() );
-    this->node_pointer_list.back()->source_model_list
-            << source_item_1
-            << source_item_2
-            << source_item_3
-            << source_item_4
-            << source_pointer_item;
-    //printf( "pointer int %d\n", (int)new_device );
-
-    QStandardItem* destination_item_1 = new QStandardItem;
-    QStandardItem* destination_item_2 = new QStandardItem;
-    QStandardItem* destination_item_3 = new QStandardItem;
-    QStandardItem* destination_item_4 = new QStandardItem;
-    QStandardItem* destination_pointer_item = new QStandardItem;
-    destination_item_1->setText( name );
-    destination_item_2->setText( host );
-    out.str( "" );
-    out << port;
-    destination_item_3->setText( out.str().c_str() );
-    out.str( "" );
-    out << can_alias;
-    destination_item_4->setText( out.str().c_str() );
-    out.str( "" );
-    out << (int)new_device;
-    destination_pointer_item->setText( out.str().c_str() );
-    this->node_pointer_list.back()->destination_model_list
-            << destination_item_1
-            << destination_item_2
-            << destination_item_3
-            << destination_item_4
-            << destination_pointer_item;
-
-    //printf( "appended row to model with %d %d columns\n",
-    //        this->node_pointer_list.back()->model_list.size(),
-    //        source_model->columnCount() );
-
-    QObject::connect( this->node_pointer_list.back(),
-                         SIGNAL(selectionStateChanged(bool)),
-                         this,
-                         SLOT(updateSelectedNodes(bool)) );
-
-    QObject::connect( this->node_pointer_list.back(),
-                      SIGNAL(nodePressed(Node*)),
-                      this,
-                      SLOT(updatePressedNode(Node*)));
-    QObject::connect( this->node_pointer_list.back(),
-                      SIGNAL(nodeReleased(Node*)),
-                      this,
-                      SLOT(updateReleasedNode(Node*)));
-
-    /*
-    default_y += 70;
-    if ( default_y >= 400 ) {
-
-        default_y = 0;
-        default_x += 100;
-
-    }
-    */
-
-    this->changeVisualizationMode( this->mode_picker->currentIndex() );
 
 }

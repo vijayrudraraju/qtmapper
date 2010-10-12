@@ -68,6 +68,10 @@ void dbDeviceCallbackFunction( mapper_db_device record,
         mdev_request_links_by_name( record->name, qtmapper );
         mdev_request_mappings_by_name( record->name, qtmapper );
 
+    } else if ( action == MDB_REMOVE ) {
+
+        form->removeDevice( record->name );
+
     }
 
 }
@@ -79,8 +83,10 @@ void dbSignalCallbackFunction( mapper_db_signal record,
     printf( "Form::db_signal_callback_function( ... )\n" );
     printf( "record->name %s action %d user %p \n",
             record->name, action, user );
-    if ( action == 1 ) {
+    if ( action == MDB_NEW ) {
+
         form->addNewSignal( record );
+
     }
 
 }
@@ -102,8 +108,10 @@ void dbMappingCallbackFunction( mapper_db_mapping record,
     printf( "Form::db_mapping_callback_function( ... )\n" );
     printf( "record->src %s record->dest %s action %d user %p \n",
             record->src_name, record->dest_name, action, user );
-    if ( action == 1 ) {
+    if ( action == MDB_NEW ) {
+
         form->addNewMapping( record );
+
     }
 
 }
@@ -120,7 +128,7 @@ void wait_local_devices() {
 
 }
 
-const char* Form::device_search_term = "";
+//const char* Form::device_search_term = "";
 
 int main( int argc, char *argv[] ) {
 
