@@ -13,8 +13,6 @@
 #include <QLabel>
 #include <QStandardItem>
 
-//#include <mapper/mapper.h>
-
 class Form;
 class Node;
 
@@ -36,16 +34,10 @@ public:
     Node(QGraphicsView* graphWidget);
     ~Node();
 
-    //QList<Edge*> edges() const;
-
     enum { Type = UserType + 1 };
     int type() const { return Type; }
 
-    //void calculateForces();
-    bool advance();
-
     QRectF boundingRect() const;
-    //QPainterPath shape() const;
     void paint(QPainter* painter,
                const QStyleOptionGraphicsItem* option,
                QWidget* widget);
@@ -56,6 +48,9 @@ public:
     QList<QStandardItem*> destination_model_list;
 
     void addMapping( Node* destination,
+                    const char* source_signal_name,
+                    const char* destination_signal_name );
+    void removeMapping( Node* destination,
                     const char* source_signal_name,
                     const char* destination_signal_name );
 

@@ -9,10 +9,10 @@
 #include <mapper/mapper.h>>
 
 #include "ui_form.h"
-#include "edge.h"
-#include "node.h"
 #include "link.h"
 #include "mappergraphicsscene.h"
+
+class Node;
 
 class Form : public QWidget, private Ui::Form {
 

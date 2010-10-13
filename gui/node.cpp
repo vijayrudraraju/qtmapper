@@ -1,4 +1,4 @@
-#include "node.h"
+#include "utility.h"
 
 Node::Node(QGraphicsView *graphWidget)
     : graph(graphWidget) {
@@ -33,6 +33,32 @@ Node::Node(QGraphicsView *graphWidget)
 
 Node::~Node(  ) {
 
+    for ( QList<QStandardItem*>::iterator it = this->source_model_list.begin();
+            it != this->source_model_list.end();
+            it++ ) {
+
+        delete (*it);
+
+    }
+    this->source_model_list.clear();
+
+    for ( QList<QStandardItem*>::iterator it = this->destination_model_list.begin();
+            it != this->destination_model_list.end();
+            it++ ) {
+
+        delete (*it);
+
+    }
+    this->destination_model_list.clear();
+
+    for ( std::list<qt_mapping>::iterator it = this->destination_list.begin();
+            it != this->destination_list.end();
+            it++ ) {
+
+        delete (*it);
+
+    }
+    this->destination_list.clear();
 
 }
 
@@ -64,16 +90,16 @@ void Node::addMapping( Node* destination,
 
 }
 
-/*
-bool Node::advance() {
+void Node::removeMapping( Node* destination,
+                       const char* source_signal_name,
+                       const char* destination_signal_name ) {
 
-    if (newPos == pos())
-        return false;
+    Utility::mapping_device_term = destination->name;
+    Utility::mapping_source_signal_term = source_signal_name;
+    Utility::mapping_dest_signal_term = destination_signal_name;
+    this->destination_list.remove_if( Utility::findMapping );
 
-    setPos(newPos);
-    return true;
-
-}*/
+}
 
 QRectF Node::boundingRect() const {
 
@@ -82,16 +108,6 @@ QRectF Node::boundingRect() const {
                   23 + 20 + adjust, 23 + 10 + adjust);
 
 }
-
-/*
-QPainterPath Node::shape() const {
-
-    QPainterPath path;
-    path.addEllipse(-10, -10, 20, 20);
-    return path;
-
-}
-*/
 
 void Node::paint( QPainter *painter,
                  const QStyleOptionGraphicsItem *option,

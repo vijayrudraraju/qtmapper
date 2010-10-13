@@ -16,7 +16,6 @@
 #include <mapper/mapper_types.h>
 
 #include "form.h"
-#include "ui_form.h"
 
 mapper_device qtmapper = 0;
 int default_port = 9000;
@@ -87,6 +86,10 @@ void dbSignalCallbackFunction( mapper_db_signal record,
 
         form->addNewSignal( record );
 
+    } else if ( action == MDB_REMOVE ) {
+
+        form->removeSignal( record );
+
     }
 
 }
@@ -111,6 +114,10 @@ void dbMappingCallbackFunction( mapper_db_mapping record,
     if ( action == MDB_NEW ) {
 
         form->addNewMapping( record );
+
+    } else if ( action == MDB_REMOVE ) {
+
+        form->removeMapping( record );
 
     }
 

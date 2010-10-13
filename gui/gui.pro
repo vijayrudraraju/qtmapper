@@ -19,4 +19,5 @@ SOURCES += form.cpp \
 link.cpp \
 node.cpp \
     mappergraphicsview.cpp \
-    mappergraphicsscene.cpp
+    mappergraphicsscene.cpp \
+    utility.cpp

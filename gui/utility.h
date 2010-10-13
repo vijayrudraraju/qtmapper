@@ -3,26 +3,20 @@
 
 #include "node.h"
 
-const char* device_search_term = "";
+class Utility {
+public:
+    static const char* device_search_term;
+    static const char* mapping_device_term;
+    static const char* mapping_source_signal_term;
+    static const char* mapping_dest_signal_term;
 
-bool nodeSortInputsFunction( Node* first, Node* second ) {
+    static bool nodeSortInputsFunction( Node* first, Node* second );
 
-    return ( (int)(first->inputs) < (int)(second->inputs) );
+    static bool nodeSortOutputsFunction( Node* first, Node* second );
 
-}
+    static bool isNameMatch( Node* i );
 
-bool nodeSortOutputsFunction( Node* first, Node* second ) {
-
-    return ( (int)(first->outputs) < (int)(second->outputs) );
-
-}
-
-bool isNameMatch( Node* i ) {
-
-    //printf( "IsNameMatch %s %s\n", i->name, device_search_term);
-    return !strcmp( i->name, device_search_term );
-
-}
-
+    static bool findMapping( qt_mapping i );
+};
 
 #endif // UTILITY_H

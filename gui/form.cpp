@@ -1,7 +1,6 @@
 #include "form.h"
 #include "utility.h"
 
-#include <QDebug>
 #include <QGraphicsScene>
 #include <QWheelEvent>
 
@@ -834,7 +833,61 @@ void Form::setMapperDevice( mapper_device device ) {
 
 void Form::removeMapping( mapper_db_mapping record ) {
 
+    std::list<Node*>::iterator source_it;
+    std::list<Node*>::iterator destination_it;
 
+    QString str = record->src_name;
+    QStringList parsed_str = str.split( "/", QString::SkipEmptyParts );
+
+    QString str_2 = record->dest_name;
+    QStringList parsed_str_2 = str_2.split( "/", QString::SkipEmptyParts );
+
+    printf( "vijay searching for %s with %s to remove mapping from...\n",
+            parsed_str[0].toLatin1().constData(),
+            parsed_str[1].toLatin1().constData() );
+    printf( "%s with %s\n",
+            parsed_str_2[0].toLatin1().constData(),
+            parsed_str_2[1].toLatin1().constData() );
+
+    parsed_str[0].prepend("/");
+    parsed_str_2[0].prepend("/");
+    parsed_str[1].prepend("/");
+    parsed_str_2[1].prepend("/");
+
+    for ( QStringList::iterator it = parsed_str.begin() + 2;
+          it != parsed_str.end();
+          it++ ) {
+
+        it->prepend("/");
+        parsed_str[1].append( (*it) );
+
+    }
+
+    for ( QStringList::iterator it = parsed_str_2.begin() + 2;
+            it != parsed_str_2.end();
+            it++ ) {
+
+        it->prepend("/");
+        parsed_str_2[1].append( (*it) );
+
+    }
+
+    Utility::device_search_term =
+            parsed_str[0].toLatin1().constData();
+    source_it = std::find_if( this->node_pointer_list.begin(),
+                        this->node_pointer_list.end(),
+                        Utility::isNameMatch );
+    Utility::device_search_term =
+            parsed_str_2[0].toLatin1().constData();
+    destination_it = std::find_if( this->node_pointer_list.begin(),
+                        this->node_pointer_list.end(),
+                        Utility::isNameMatch );
+
+    (*source_it)->removeMapping( (*destination_it),
+                              parsed_str[1].toLatin1().constData(),
+                              parsed_str_2[1].toLatin1().constData() );
+
+    this->updateMappingView();
 
 }
 
@@ -879,16 +932,16 @@ void Form::addNewMapping( mapper_db_mapping record ) {
 
     }
 
-    device_search_term =
+    Utility::device_search_term =
             parsed_str[0].toLatin1().constData();
     source_it = std::find_if( this->node_pointer_list.begin(),
                         this->node_pointer_list.end(),
-                        isNameMatch );
-    device_search_term =
+                        Utility::isNameMatch );
+    Utility::device_search_term =
             parsed_str_2[0].toLatin1().constData();
     destination_it = std::find_if( this->node_pointer_list.begin(),
                         this->node_pointer_list.end(),
-                        isNameMatch );
+                        Utility::isNameMatch );
 
     (*source_it)->addMapping( (*destination_it),
                               parsed_str[1].toLatin1().constData(),
@@ -912,11 +965,11 @@ void Form::addNewSignal( mapper_db_signal record ) {
     printf( "vijay searching for %s to add signal\n",
             record->device_name );
             */
-    device_search_term = record->device_name;
+    Utility::device_search_term = record->device_name;
 
     it = std::find_if( this->node_pointer_list.begin(),
                         this->node_pointer_list.end(),
-                        isNameMatch );
+                        Utility::isNameMatch );
     /*
     printf( "vijay found %s with %d rows\n",
             (*it)->name,
@@ -991,35 +1044,25 @@ void Form::addNewSignal( mapper_db_signal record ) {
 void Form::removeDevice( const char* name ) {
 
     std::list<Node*>::iterator it;
-    device_search_term = name;
+    Utility::device_search_term = name;
 
     it = std::find_if( this->node_pointer_list.begin(),
                       this->node_pointer_list.end(),
-                      isNameMatch );
+                      Utility::isNameMatch );
     scene->removeItem(*it);
-    delete (*it);
 
-    std::remove_if( this->node_pointer_list.begin(),
-                      this->node_pointer_list.end(),
-                      isNameMatch );
+    if ( (*it)->is_source ) {
 
-    printf( "remove %s\n", name );
+        this->removeNodeFromSourceView( (*it) );
+        (*it)->conflict_flag = 0;
 
-    /*
-    for ( std::list<Node*>::iterator it =
-            this->node_pointer_list.begin();
-          it != this->node_pointer_list.end();
-          it++ ) {
+    } else if ( (*it)->is_destination ) {
 
-        std::list<Node*>::iterator it;
-        device_search_term = record->device_name;
-
-        it = std::find_if( this->node_pointer_list.begin(),
-                          this->node_pointer_list.end(),
-                          isNameMatch );
+        this->removeNodeFromDestinationView( (*it) );
+        (*it)->conflict_flag = 0;
 
     }
-    */
+    this->node_pointer_list.remove_if( Utility::isNameMatch );
 
     this->changeVisualizationMode( this->mode_picker->currentIndex() );
 
@@ -1166,8 +1209,8 @@ void Form::changeVisualizationMode( int current_mode ) {
         }
 
 
-        cluster_1.sort( nodeSortOutputsFunction );
-        cluster_2.sort( nodeSortInputsFunction );
+        cluster_1.sort( Utility::nodeSortOutputsFunction );
+        cluster_2.sort( Utility::nodeSortInputsFunction );
 
         for ( std::list<Node*>::iterator it =
                 cluster_1.begin();
