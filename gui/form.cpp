@@ -105,6 +105,8 @@ Form::Form( QWidget *parent ) :
     this->x_param_picker->addItem(picker_str);
     picker_str = "# of signals";
     this->y_param_picker->addItem(picker_str);
+    picker_str = "# of signals";
+    this->size_param_picker->addItem(picker_str);
 
     setWindowTitle( tr("libmapper monitor") );
 }
@@ -1202,8 +1204,9 @@ void Form::changeVisualizationMode( int current_mode ) {
 
             }
 
-            (*it)->inputs = (*it)->source_model_list[0]->rowCount();
-            (*it)->outputs = (*it)->destination_model_list[0]->rowCount();
+            (*it)->outputs = (*it)->source_model_list[0]->rowCount();
+            (*it)->inputs = (*it)->destination_model_list[0]->rowCount();
+            (*it)->radius = ((*it)->outputs + (*it)->inputs + 1) * 20;
             (*it)->update();
 
         }

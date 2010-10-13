@@ -20,6 +20,7 @@ Node::Node(QGraphicsView *graphWidget)
 
     inputs = 0;
     outputs = 0;
+    radius = 20;
 
     input_num_item.setParentItem( this );
     input_num_item.setPos( 23, -23 );
@@ -105,7 +106,7 @@ QRectF Node::boundingRect() const {
 
     qreal adjust = 2;
     return QRectF(-10 - adjust, -10 - adjust,
-                  23 + 20 + adjust, 23 + 10 + adjust);
+                  radius + 20 + adjust, radius + 10 + adjust);
 
 }
 
@@ -113,27 +114,30 @@ void Node::paint( QPainter *painter,
                  const QStyleOptionGraphicsItem *option,
                  QWidget *widget ) {
 
+    name_item.setPos( radius+3, 23 );
     input_num_item.setText( "inputs " + QString::number(inputs) );
+    input_num_item.setPos( radius+3, -23 );
     output_num_item.setText( "outputs " + QString::number(outputs) );
+    output_num_item.setPos( radius+3, 0 );
 
     //if ( option->state & QStyle::State_Selected ) {
     if ( is_source ) {
 
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::yellow);
-        painter->drawEllipse(-10, -10, 20, 20);
+        painter->drawEllipse(-10, -10, radius, radius);
 
     } else if ( is_destination ) {
 
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::blue);
-        painter->drawEllipse(-10, -10, 20, 20);
+        painter->drawEllipse(-10, -10, radius, radius);
 
     } else {
 
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::darkGray);
-        painter->drawEllipse(-10, -10, 20, 20);
+        painter->drawEllipse(-10, -10, radius, radius);
 
     }
     /*

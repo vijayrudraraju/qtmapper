@@ -185,6 +185,22 @@
           <item>
            <widget class="QComboBox" name="y_param_picker"/>
           </item>
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>size</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="size_param_picker"/>
+          </item>
          </layout>
         </widget>
        </item>
