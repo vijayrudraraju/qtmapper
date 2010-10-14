@@ -4,6 +4,8 @@
 #include <QPainter>
 #include <QStyleOption>
 
+#include <cstdio>
+
 #include "link.h"
 
 Link::Link( QGraphicsView *viewWidget, QGraphicsScene* new_scene  )

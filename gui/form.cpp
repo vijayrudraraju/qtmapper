@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <sstream>
+#include <algorithm>
 
 Form::Form( QWidget *parent ) :
     QWidget( parent ) {

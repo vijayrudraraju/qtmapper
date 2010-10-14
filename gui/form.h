@@ -6,7 +6,7 @@
 #include <QTimer>
 #include <QStandardItemModel>
 
-#include <mapper/mapper.h>>
+#include <mapper/mapper.h>
 
 #include "ui_form.h"
 #include "link.h"
