@@ -40,7 +40,7 @@ public:
     void addDbSignalCallbackFunction( signal_callback_func* f );
     void addDbLinkCallbackFunction( link_callback_func* f );
     void addDbMappingCallbackFunction( mapping_callback_func* f );
-    void setMapperDevice( mapper_device device );
+    void setMapperMonitor( mapper_monitor mon );
 
     void updateIsDeletable( bool checked );
 
@@ -102,7 +102,8 @@ private:
     signal_callback_func* db_signal_callback_function;
     link_callback_func* db_link_callback_function;
     mapping_callback_func* db_mapping_callback_function;
-    mapper_device qtmapper;
+    mapper_db db;
+    mapper_monitor mon;
 
     QStandardItemModel* source_model;
     QStandardItemModel* destination_model;

@@ -17,12 +17,12 @@
 
 #include "form.h"
 
-mapper_device qtmapper = 0;
+mapper_monitor qtmapper = 0;
 int default_port = 9000;
 
 int setup_qtmapper(  ) {
 
-    qtmapper = mdev_new( "qtmapper", default_port, 0 );
+    qtmapper = mapper_monitor_new();
 
     if ( !qtmapper ) {
 
@@ -40,7 +40,7 @@ void cleanup_qtmapper(  ) {
     if ( qtmapper ) {
 
         printf( "freeing qtmapper..." );
-        mdev_free( qtmapper );
+        mapper_monitor_free( qtmapper );
         printf( "ok\n" );
 
     }
@@ -63,9 +63,9 @@ void dbDeviceCallbackFunction( mapper_db_device record,
                             record->host,
                             record->port,
                             record->canAlias );
-        mdev_request_signals_by_name( record->name, qtmapper );
-        mdev_request_links_by_name( record->name, qtmapper );
-        mdev_request_mappings_by_name( record->name, qtmapper );
+        mapper_monitor_request_signals_by_name( qtmapper, record->name );
+        mapper_monitor_request_links_by_name( qtmapper, record->name );
+        mapper_monitor_request_mappings_by_name( qtmapper, record->name );
 
     } else if ( action == MDB_REMOVE ) {
 
@@ -123,18 +123,6 @@ void dbMappingCallbackFunction( mapper_db_mapping record,
 
 }
 
-void wait_local_devices() {
-
-    while ( !mdev_ready(qtmapper) ) {
-
-        mdev_poll( qtmapper, 0 );
-
-        usleep( 500 * 1000 );
-
-    }
-
-}
-
 //const char* Form::device_search_term = "";
 
 int main( int argc, char *argv[] ) {
@@ -147,12 +135,10 @@ int main( int argc, char *argv[] ) {
 
     }
 
-    wait_local_devices();
-
     QApplication app(argc, argv);
 
     form = new Form(  );
-    form->setMapperDevice( qtmapper );
+    form->setMapperMonitor( qtmapper );
 
     form->addDbDeviceCallbackFunction( dbDeviceCallbackFunction );
     form->addDbSignalCallbackFunction( dbSignalCallbackFunction );

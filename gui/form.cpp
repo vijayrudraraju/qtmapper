@@ -258,7 +258,7 @@ void Form::sendNewMappingRequest( const char* source_signal_path,
 
 void Form::update(  ) {
 
-    mdev_poll( this->qtmapper, 0 );
+    mapper_monitor_poll( this->mon, 0 );
     QWidget::update();
 
     //this->destination_signal_list->resizeColumnToContents( 0 );
@@ -787,21 +787,21 @@ void Form::updateEditSelectionMode( int index ) {
 
 void Form::addDbDeviceCallbackFunction( device_callback_func* f ) {
 
-    mapper_db_remove_device_callback(
-            this->db_device_callback_function, (void*) 0 );
+    mapper_db_remove_device_callback(this->db,
+        this->db_device_callback_function, (void*) 0 );
     this->db_device_callback_function = f;
-    mapper_db_add_device_callback(
-            this->db_device_callback_function, (void*) 0 );
+    mapper_db_add_device_callback(this->db,
+        this->db_device_callback_function, (void*) 0 );
 
 }
 
 void Form::addDbSignalCallbackFunction( signal_callback_func* f ) {
 
     printf( "add signal callback function\n" );
-    mapper_db_remove_signal_callback(
+    mapper_db_remove_signal_callback(this->db,
             this->db_signal_callback_function, (void*) 0 );
     this->db_signal_callback_function = f;
-    mapper_db_add_signal_callback(
+    mapper_db_add_signal_callback(this->db,
             this->db_signal_callback_function, (void*) 0 );
 
 }
@@ -809,10 +809,10 @@ void Form::addDbSignalCallbackFunction( signal_callback_func* f ) {
 void Form::addDbLinkCallbackFunction( link_callback_func* f ) {
 
     printf( "add db_link callback function\n" );
-    mapper_db_remove_link_callback(
+    mapper_db_remove_link_callback(this->db,
             this->db_link_callback_function, (void*) 0 );
     this->db_link_callback_function = f;
-    mapper_db_add_link_callback(
+    mapper_db_add_link_callback(this->db,
             this->db_link_callback_function, (void*) 0 );
 
 }
@@ -820,17 +820,18 @@ void Form::addDbLinkCallbackFunction( link_callback_func* f ) {
 void Form::addDbMappingCallbackFunction( mapping_callback_func* f ) {
 
     printf( "add db_mapping callback function\n" );
-    mapper_db_remove_mapping_callback(
+    mapper_db_remove_mapping_callback(this->db,
             this->db_mapping_callback_function, (void*) 0 );
     this->db_mapping_callback_function = f;
-    mapper_db_add_mapping_callback(
+    mapper_db_add_mapping_callback(this->db,
             this->db_mapping_callback_function, (void*) 0 );
 
 }
 
-void Form::setMapperDevice( mapper_device device ) {
+void Form::setMapperMonitor( mapper_monitor mon ) {
 
-    this->qtmapper = device;
+    this->mon = mon;
+    this->db = mapper_monitor_get_db(mon);
 
 }
 
