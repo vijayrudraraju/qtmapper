@@ -31,7 +31,7 @@ Form::Form( QWidget *parent ) :
     graphics_view->scale( qreal(0.7), qreal(0.7) );
     graphics_view->setMinimumSize( 600, 300 );
     graphics_view->setAlignment( Qt::AlignLeft|Qt::AlignTop );
-    graphics_view->setSceneRect( -50, -50, 2000, 1000 );
+    graphics_view->setSceneRect( -50, -50, 4000, 2000 );
 
     graphics_view_2->setScene( &mapping_scene );
     graphics_view_2->installEventFilter( this );
@@ -99,7 +99,6 @@ Form::Form( QWidget *parent ) :
     connect( this->deleteButton, SIGNAL(toggled(bool)),
              this, SLOT(updateDeleteButtonState(bool)) );
 
-
     QString picker_str = "cluster";
     this->mode_picker->addItem(picker_str);
     picker_str = "inputs/outputs";
@@ -110,6 +109,7 @@ Form::Form( QWidget *parent ) :
     this->size_param_picker->addItem(picker_str);
 
     setWindowTitle( tr("libmapper monitor") );
+
 }
 
 void Form::updateIsDeletable( bool checked ) {
@@ -1168,9 +1168,9 @@ void Form::changeVisualizationMode( int current_mode ) {
 
         int cluster_1_x = 0;
         int cluster_1_y = 0;
-        int cluster_2_x = 300;
+        int cluster_2_x = 600;
         int cluster_2_y = 0;
-        int cluster_3_x = 600;
+        int cluster_3_x = 1200;
         int cluster_3_y = 0;
 
         std::list<Node*> cluster_1;
@@ -1224,7 +1224,7 @@ void Form::changeVisualizationMode( int current_mode ) {
 
             (*it)->setPos( cluster_1_x,
                            cluster_1_y );
-            cluster_1_y += 70;
+            cluster_1_y += (*it)->radius + 28;
 
         } for ( std::list<Node*>::iterator it =
                 cluster_2.begin();
@@ -1233,7 +1233,7 @@ void Form::changeVisualizationMode( int current_mode ) {
 
             (*it)->setPos( cluster_2_x,
                            cluster_2_y );
-            cluster_2_y += 70;
+            cluster_2_y += (*it)->radius + 28;
 
         } for ( std::list<Node*>::iterator it =
                 cluster_3.begin();
@@ -1242,7 +1242,7 @@ void Form::changeVisualizationMode( int current_mode ) {
 
             (*it)->setPos( cluster_3_x,
                            cluster_3_y );
-            cluster_3_y += 70;
+            cluster_3_y += (*it)->radius + 28;
 
         }
 

@@ -123,6 +123,19 @@ void dbMappingCallbackFunction( mapper_db_mapping record,
 
 }
 
+void wait_local_devices() {
+/*
+    while ( !mdev_ready(qtmapper) ) {
+
+        mdev_poll( qtmapper, 0 );
+
+        usleep( 500 * 1000 );
+
+    }
+    */
+
+}
+
 //const char* Form::device_search_term = "";
 
 int main( int argc, char *argv[] ) {

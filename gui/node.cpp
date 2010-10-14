@@ -15,7 +15,7 @@ Node::Node(QGraphicsView *graphWidget)
     setZValue(-1);
 
     name_item.setParentItem( this );
-    name_item.setPos( 23, 23 );
+    name_item.setPos( 23, -22 );
     name_item.setText( "test" );
 
     inputs = 0;
@@ -23,11 +23,11 @@ Node::Node(QGraphicsView *graphWidget)
     radius = 20;
 
     input_num_item.setParentItem( this );
-    input_num_item.setPos( 23, -23 );
+    input_num_item.setPos( 23, 6 );
     input_num_item.setText( "inputs " + QString::number(inputs) );
 
     output_num_item.setParentItem( this );
-    output_num_item.setPos( 23, 0 );
+    output_num_item.setPos( 23, -8 );
     output_num_item.setText( "outputs " + QString::number(outputs) );
 
 }
@@ -114,11 +114,11 @@ void Node::paint( QPainter *painter,
                  const QStyleOptionGraphicsItem *option,
                  QWidget *widget ) {
 
-    name_item.setPos( radius+3, 23 );
+    name_item.setPos( radius+3, -22 );
     input_num_item.setText( "inputs " + QString::number(inputs) );
-    input_num_item.setPos( radius+3, -23 );
+    input_num_item.setPos( radius+3, 6 );
     output_num_item.setText( "outputs " + QString::number(outputs) );
-    output_num_item.setPos( radius+3, 0 );
+    output_num_item.setPos( radius+3, -8 );
 
     //if ( option->state & QStyle::State_Selected ) {
     if ( is_source ) {
