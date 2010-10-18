@@ -20,7 +20,7 @@ Node::Node(QGraphicsView *graphWidget)
 
     inputs = 0;
     outputs = 0;
-    radius = 20;
+    diameter = 20;
 
     input_num_item.setParentItem( this );
     input_num_item.setPos( 23, 6 );
@@ -104,9 +104,9 @@ void Node::removeMapping( Node* destination,
 
 QRectF Node::boundingRect() const {
 
-    qreal adjust = 2;
-    return QRectF(-10 - adjust, -10 - adjust,
-                  radius + 20 + adjust, radius + 10 + adjust);
+    qreal adjust = 0;
+    return QRectF( -(diameter/2) - adjust, -(diameter/2) - adjust,
+                  diameter + 20 + adjust, diameter + 10 + adjust );
 
 }
 
@@ -114,47 +114,36 @@ void Node::paint( QPainter *painter,
                  const QStyleOptionGraphicsItem *option,
                  QWidget *widget ) {
 
-    name_item.setPos( radius+3, -22 );
+    name_item.setPos( diameter+3, -23 );
     input_num_item.setText( "inputs " + QString::number(inputs) );
-    input_num_item.setPos( radius+3, 6 );
+    input_num_item.setPos( diameter+3, 8 );
     output_num_item.setText( "outputs " + QString::number(outputs) );
-    output_num_item.setPos( radius+3, -8 );
+    output_num_item.setPos( diameter+3, -7 );
 
-    //if ( option->state & QStyle::State_Selected ) {
+    painter->setOpacity( 0.7 );
+
     if ( is_source ) {
 
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::yellow);
-        painter->drawEllipse(-10, -10, radius, radius);
+        painter->drawEllipse( -(diameter/2), -(diameter/2),
+                             diameter, diameter);
 
     } else if ( is_destination ) {
 
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::blue);
-        painter->drawEllipse(-10, -10, radius, radius);
+        painter->drawEllipse( -(diameter/2), -(diameter/2),
+                             diameter, diameter);
 
     } else {
 
         painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::darkGray);
-        painter->drawEllipse(-10, -10, radius, radius);
+        painter->drawEllipse( -(diameter/2), -(diameter/2),
+                             diameter, diameter);
 
     }
-    /*
-    QRadialGradient gradient(-3, -3, 10);
-    if (option->state & QStyle::State_Sunken) {
-        gradient.setCenter(3, 3);
-        gradient.setFocalPoint(3, 3);
-        gradient.setColorAt(1, QColor(Qt::yellow).light(120));
-        gradient.setColorAt(0, QColor(Qt::darkYellow).light(120));
-    } else {
-        gradient.setColorAt(0, Qt::yellow);
-        gradient.setColorAt(1, Qt::darkYellow);
-    }
-    painter->setBrush(gradient);
-    painter->setPen(QPen(Qt::black, 0));
-    painter->drawEllipse(-10, -10, 20, 20);
-    */
 
 }
 

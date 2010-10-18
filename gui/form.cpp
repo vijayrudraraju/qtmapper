@@ -68,7 +68,7 @@ Form::Form( QWidget *parent ) :
     this->selected_destination_circle = NULL;
 
     connect( this->mode_picker, SIGNAL(currentIndexChanged(int)),
-             this, SLOT(updateVisualizationMode(int)) );
+             this, SLOT(changeVisualizationMode(int)) );
 
     connect( selection_mode_toggle, SIGNAL(currentChanged(int)),
              this, SLOT(updateSelectionMode(int)) );
@@ -83,8 +83,14 @@ Form::Form( QWidget *parent ) :
     connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
              this, SLOT(beginToDrawMapping(QModelIndex)) );
     connect( this->destination_signal_list, SIGNAL(clicked(QModelIndex)),
+             this, SLOT(beginToDrawMapping(QModelIndex)) );
+
+    connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
+             this, SLOT(finishDrawingMapping(QModelIndex)) );
+    connect( this->destination_signal_list, SIGNAL(clicked(QModelIndex)),
              this, SLOT(finishDrawingMapping(QModelIndex)) );
 
+    this->signal_selected_flag = 0;
 
     connect( this->destination_signal_list, SIGNAL(collapsed(QModelIndex)),
              this, SLOT(updateMappingView()) );
@@ -148,41 +154,93 @@ void Form::updateDeleteButtonState( bool checked ) {
 
 void Form::beginToDrawMapping( const QModelIndex& index ) {
 
-    if ( this->deleteButton->isChecked() ) {
+    if ( !this->makeButton->isChecked() ) {
 
         return;
 
     }
 
-    QPen pen_color;
-    pen_color.setColor( Qt::yellow );
-    QBrush brush_color;
-    brush_color.setColor( Qt::yellow );
-    brush_color.setStyle( Qt::SolidPattern );
 
-    QRect source_signal_rect;
-    source_signal_rect =
-            source_signal_list->
-            visualRect( index  );
+    if ( (QStandardItemModel*)index.model() == this->source_model &&
+         (this->signal_selected_flag == 1 || this->signal_selected_flag == 0) ) {
 
-    int source_vertical_offset =
-            source_signal_list->header()->height();
+        printf("source side!\n");
+        QPen pen_color;
+        pen_color.setColor( Qt::yellow );
+        QBrush brush_color;
+        brush_color.setColor( Qt::yellow );
+        brush_color.setStyle( Qt::SolidPattern );
 
-    if ( this->selected_source_circle != NULL ) {
-        this->mapping_scene.removeItem( this->selected_source_circle );
-    }
-    if ( index.parent().isValid() ) {
+        QRect source_signal_rect;
+        source_signal_rect =
+                source_signal_list->
+                visualRect( index  );
 
-        this->selected_source_circle =
-        this->mapping_scene.addEllipse( -1 * (source_signal_rect.height()/2 - 1),
-                         source_vertical_offset +
-                         source_signal_rect.topLeft().y() + 1,
-                         source_signal_rect.height() - 2,
-                         source_signal_rect.height() - 2,
-                         pen_color,
-                         brush_color );
+        int source_vertical_offset =
+                source_signal_list->header()->height();
 
-        this->selected_signal = index;
+        if ( this->selected_source_circle != NULL ) {
+            this->mapping_scene.removeItem( this->selected_source_circle );
+        }
+        if ( index.parent().isValid() ) {
+
+            printf("source side is valid!\n");
+            this->selected_source_circle =
+            this->mapping_scene.addEllipse( -1 * (source_signal_rect.height()/2 - 1),
+                             source_vertical_offset +
+                             source_signal_rect.topLeft().y() + 1,
+                             source_signal_rect.height() - 2,
+                             source_signal_rect.height() - 2,
+                             pen_color,
+                             brush_color );
+
+            this->selected_signal = index;
+
+        }
+
+        this->signal_selected_flag = 1;
+
+    } else if ( (QStandardItemModel*)index.model() == this->destination_model &&
+                (this->signal_selected_flag == -1 || this->signal_selected_flag == 0) ) {
+
+        printf("destination side!\n");
+        QPen pen_color;
+        pen_color.setColor( Qt::blue );
+        QBrush brush_color;
+        brush_color.setColor( Qt::blue );
+        brush_color.setStyle( Qt::SolidPattern );
+
+        QRect dest_signal_rect;
+        dest_signal_rect =
+                destination_signal_list->
+                visualRect( index  );
+
+        int dest_vertical_offset =
+                destination_signal_list->header()->height();
+
+        if ( this->selected_destination_circle != NULL ) {
+            this->mapping_scene.removeItem(
+                    this->selected_destination_circle
+                    );
+        }
+        if ( index.parent().isValid() ) {
+
+            printf("destination side is valid!\n");
+            this->selected_destination_circle =
+                    this->mapping_scene.addEllipse(
+                             graphics_view_2->width() - dest_signal_rect.height() + 4,
+                             dest_vertical_offset +
+                             dest_signal_rect.topLeft().y() + 1,
+                             dest_signal_rect.height() - 2,
+                             dest_signal_rect.height() - 2,
+                             pen_color,
+                             brush_color );
+
+            this->selected_signal = index;
+
+        }
+
+        this->signal_selected_flag = -1;
 
     }
 
@@ -190,60 +248,124 @@ void Form::beginToDrawMapping( const QModelIndex& index ) {
 
 void Form::finishDrawingMapping( const QModelIndex& index ) {
 
-    if ( this->deleteButton->isChecked() ) {
+    if ( !this->makeButton->isChecked() || !signal_selected_flag ) {
 
         return;
 
     }
 
-    QString source_str = "";
-    QString dest_str = "";
+    if ( (QStandardItemModel*)index.model() == this->source_model &&
+         this->signal_selected_flag == -1 ) {
 
-    QPen pen_color;
-    pen_color.setColor( Qt::blue );
-    QBrush brush_color;
-    brush_color.setColor( Qt::blue );
-    brush_color.setStyle( Qt::SolidPattern );
+        printf("source side!\n");
+        QString source_str = "";
+        QString dest_str = "";
 
-    QRect dest_signal_rect;
-    dest_signal_rect =
-            destination_signal_list->
-            visualRect( index  );
+        QPen pen_color;
+        pen_color.setColor( Qt::yellow );
+        QBrush brush_color;
+        brush_color.setColor( Qt::yellow );
+        brush_color.setStyle( Qt::SolidPattern );
 
-    int dest_vertical_offset =
-            destination_signal_list->header()->height();
+        QRect source_signal_rect;
+        source_signal_rect =
+                source_signal_list->
+                visualRect( index  );
 
-    if ( this->selected_destination_circle != NULL ) {
-        this->mapping_scene.removeItem( this->selected_destination_circle );
-    }
+        int source_vertical_offset =
+                source_signal_list->header()->height();
 
-    if ( index.isValid() && index.parent().isValid() ) {
+        if ( this->selected_source_circle != NULL ) {
+            this->mapping_scene.removeItem( this->selected_source_circle );
+        }
 
-        this->selected_destination_circle =
-        this->mapping_scene.addEllipse(
-                 graphics_view_2->width() - dest_signal_rect.height() + 4,
-                 dest_vertical_offset +
-                 dest_signal_rect.topLeft().y() + 1,
-                 dest_signal_rect.height() - 2,
-                 dest_signal_rect.height() - 2,
-                 pen_color,
-                 brush_color );
+        if ( index.isValid() && index.parent().isValid() ) {
 
-        dest_str.append( this->destination_model->itemFromIndex( index.parent() )->text() );
-        dest_str.append( this->destination_model->
-                          itemFromIndex( index.parent().child(index.row(),0) )->text() );
+            this->selected_source_circle =
+            this->mapping_scene.addEllipse( -1 * (source_signal_rect.height()/2 - 1),
+                                     source_vertical_offset +
+                                     source_signal_rect.topLeft().y() + 1,
+                                     source_signal_rect.height() - 2,
+                                     source_signal_rect.height() - 2,
+                                     pen_color,
+                                     brush_color );
 
-        source_str.append( this->source_model->itemFromIndex( selected_signal.parent() )->text() );
-        source_str.append( this->source_model->
-                           itemFromIndex( selected_signal.parent().child(selected_signal.row(),0) )->
-                           text() );
+            source_str.append( this->source_model->itemFromIndex( index.parent() )->text() );
+            source_str.append( this->source_model->
+                              itemFromIndex( index.parent().child(index.row(),0) )->text() );
 
-        printf( "new mapping between %s %s\n",
-                source_str.toLatin1().constData(),
-                dest_str.toLatin1().constData() );
+            dest_str.append( this->destination_model->itemFromIndex( selected_signal.parent() )->text() );
+            dest_str.append( this->destination_model->
+                               itemFromIndex( selected_signal.parent().child(selected_signal.row(),0) )->
+                               text() );
 
-        this->sendNewMappingRequest( source_str.toLatin1().constData(),
-                                     dest_str.toLatin1().constData() );
+            printf( "new mapping between %s %s\n",
+                    source_str.toLatin1().constData(),
+                    dest_str.toLatin1().constData() );
+
+            this->sendNewMappingRequest( source_str.toLatin1().constData(),
+                                         dest_str.toLatin1().constData() );
+
+        }
+
+        this->signal_selected_flag = 0;
+
+    } else if ( (QStandardItemModel*)index.model() == this->destination_model &&
+                this->signal_selected_flag == 1 ) {
+
+        printf("destination side!\n");
+        QString source_str = "";
+        QString dest_str = "";
+
+        QPen pen_color;
+        pen_color.setColor( Qt::blue );
+        QBrush brush_color;
+        brush_color.setColor( Qt::blue );
+        brush_color.setStyle( Qt::SolidPattern );
+
+        QRect dest_signal_rect;
+        dest_signal_rect =
+                destination_signal_list->
+                visualRect( index  );
+
+        int dest_vertical_offset =
+                destination_signal_list->header()->height();
+
+        if ( this->selected_destination_circle != NULL ) {
+            this->mapping_scene.removeItem( this->selected_destination_circle );
+        }
+
+        if ( index.isValid() && index.parent().isValid() ) {
+
+            this->selected_destination_circle =
+            this->mapping_scene.addEllipse(
+                     graphics_view_2->width() - dest_signal_rect.height() + 4,
+                     dest_vertical_offset +
+                     dest_signal_rect.topLeft().y() + 1,
+                     dest_signal_rect.height() - 2,
+                     dest_signal_rect.height() - 2,
+                     pen_color,
+                     brush_color );
+
+            dest_str.append( this->destination_model->itemFromIndex( index.parent() )->text() );
+            dest_str.append( this->destination_model->
+                              itemFromIndex( index.parent().child(index.row(),0) )->text() );
+
+            source_str.append( this->source_model->itemFromIndex( selected_signal.parent() )->text() );
+            source_str.append( this->source_model->
+                               itemFromIndex( selected_signal.parent().child(selected_signal.row(),0) )->
+                               text() );
+
+            printf( "new mapping between %s %s\n",
+                    source_str.toLatin1().constData(),
+                    dest_str.toLatin1().constData() );
+
+            this->sendNewMappingRequest( source_str.toLatin1().constData(),
+                                         dest_str.toLatin1().constData() );
+
+        }
+
+        this->signal_selected_flag = 0;
 
     }
 
@@ -775,6 +897,7 @@ void Form::updateEditSelectionMode( int index ) {
     if ( index == 0 ) {
 
         printf( "selected neighborhood tab %d\n", index );
+        this->changeVisualizationMode( this->mode_picker->currentIndex() );
 
     } else if ( index == 1 ) {
 
@@ -1156,21 +1279,21 @@ void Form::addNewDevice( const char* name,
 
 }
 
-void Form::updateVisualizationMode( int mode_index ) {
+void Form::changeVisualizationMode( int mode_index ) {
 
-    this->changeVisualizationMode( mode_index );
+    this->updateVisualizationStuff( mode_index );
 
 }
 
-void Form::changeVisualizationMode( int current_mode ) {
+void Form::updateVisualizationNodes( int current_mode ) {
 
     if ( current_mode == 0 ) {
 
-        int cluster_1_x = 0;
+        int cluster_1_x = 200;
         int cluster_1_y = 0;
-        int cluster_2_x = 600;
+        int cluster_2_x = 800;
         int cluster_2_y = 0;
-        int cluster_3_x = 1200;
+        int cluster_3_x = 1400;
         int cluster_3_y = 0;
 
         std::list<Node*> cluster_1;
@@ -1208,7 +1331,7 @@ void Form::changeVisualizationMode( int current_mode ) {
 
             (*it)->outputs = (*it)->source_model_list[0]->rowCount();
             (*it)->inputs = (*it)->destination_model_list[0]->rowCount();
-            (*it)->radius = ((*it)->outputs + (*it)->inputs + 1) * 20;
+            (*it)->diameter = ((*it)->outputs + (*it)->inputs + 1) * 20;
             (*it)->update();
 
         }
@@ -1224,7 +1347,7 @@ void Form::changeVisualizationMode( int current_mode ) {
 
             (*it)->setPos( cluster_1_x,
                            cluster_1_y );
-            cluster_1_y += (*it)->radius + 28;
+            cluster_1_y += (*it)->diameter + 28;
 
         } for ( std::list<Node*>::iterator it =
                 cluster_2.begin();
@@ -1233,7 +1356,7 @@ void Form::changeVisualizationMode( int current_mode ) {
 
             (*it)->setPos( cluster_2_x,
                            cluster_2_y );
-            cluster_2_y += (*it)->radius + 28;
+            cluster_2_y += (*it)->diameter + 28;
 
         } for ( std::list<Node*>::iterator it =
                 cluster_3.begin();
@@ -1242,10 +1365,63 @@ void Form::changeVisualizationMode( int current_mode ) {
 
             (*it)->setPos( cluster_3_x,
                            cluster_3_y );
-            cluster_3_y += (*it)->radius + 28;
+            cluster_3_y += (*it)->diameter + 28;
 
         }
 
     }
+
+}
+
+void Form::updateVisualizationLinks( int current_mode ) {
+
+    for ( std::list<QGraphicsItem*>::iterator it =
+            this->visualization_links.begin();
+            it != this->visualization_links.end();
+            it++ ) {
+
+        scene->removeItem( (*it) );
+
+    }
+
+    this->visualization_links.clear();
+
+    if ( current_mode == 0 ) {
+
+        for ( std::list<Node*>::iterator it =
+                this->node_pointer_list.begin();
+                it != this->node_pointer_list.end();
+                it++ ) {
+
+
+            for ( std::list<qt_mapping>::iterator itt =
+                    (*it)->destination_list.begin();
+                    itt != (*it)->destination_list.end();
+                    itt++ ) {
+
+                printf( "destination coords x %f y %f./\n",
+                        (*itt)->destination_node->pos().x(),
+                        (*itt)->destination_node->pos().y() );
+                this->visualization_links.push_back(
+                    scene->addLine(
+                        (*it)->pos().x(),
+                        (*it)->pos().y(),
+                        (*itt)->destination_node->pos().x(),
+                        (*itt)->destination_node->pos().y()
+                        )
+                    );
+                this->visualization_links.back()->setZValue( -100 );
+
+            }
+
+        }
+    }
+
+}
+
+void Form::updateVisualizationStuff( int current_mode ) {
+
+    this->updateVisualizationNodes( current_mode );
+    this->updateVisualizationLinks( current_mode );
 
 }

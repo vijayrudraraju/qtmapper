@@ -54,7 +54,6 @@ public slots:
     void update();
 
     void updateMappingView( );
-    void updateVisualizationMode( int mode_index );
 
     void updateDeleteButtonState( bool checked );
     void updatePressedLink( Link* reference );
@@ -81,7 +80,10 @@ protected:
     bool eventFilter( QObject* obj, QEvent* event );
 
 private:
-    void changeVisualizationMode( int current_mode );
+    void changeVisualizationMode( int mode_index );
+    void updateVisualizationLinks( int current_mode );
+    void updateVisualizationNodes( int current_mode );
+    void updateVisualizationStuff( int current_mode );
 
     void addNodeToDestinationView( Node* the_node );
     void removeNodeFromDestinationView( Node* the_node );
@@ -91,8 +93,11 @@ private:
     void clearMappingView( );
 
     int timerId;
-    std::list <Node*> node_pointer_list;
-    std::list <Link*> displayed_mapping_list;
+
+    std::list<Node*> node_pointer_list;
+    std::list<Link*> displayed_mapping_list;
+    std::list<QGraphicsItem*> visualization_links;
+
     MapperGraphicsScene* scene;
     QGraphicsScene mapping_scene;
 
@@ -102,6 +107,7 @@ private:
     signal_callback_func* db_signal_callback_function;
     link_callback_func* db_link_callback_function;
     mapping_callback_func* db_mapping_callback_function;
+
     mapper_db db;
     mapper_monitor mon;
 
@@ -112,14 +118,13 @@ private:
     QGraphicsItem* selected_destination_circle;
 
     QPersistentModelIndex selected_signal;
+    int signal_selected_flag;
 
     int default_x;
     int default_y;
 
     const char* active_node_name;
     bool mouse_is_pressed;
-    //int cued_add_action_index; //1, 2, 3, 4 (4 possible actions)
-    //int cued_remove_action_index; //1, 2, 3, 4 (4 possible actions)
 
 };
 

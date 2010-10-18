@@ -61,7 +61,7 @@ public:
     const char* name;
     int inputs;
     int outputs;
-    int radius;
+    int diameter;
 
     std::list<qt_mapping> destination_list;
 
