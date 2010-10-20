@@ -53,6 +53,9 @@ public:
 public slots:
     void update();
 
+    void clearSources();
+    void clearDests();
+
     void updateMappingView( );
 
     void updateDeleteButtonState( bool checked );
@@ -70,6 +73,8 @@ public slots:
     void beginToDrawMapping( const QModelIndex& index );
     void finishDrawingMapping( const QModelIndex& index );
 
+    void changeVisualizationMode( int mode_index );
+
 protected:
     //void keyPressEvent(QKeyEvent *event);
     //void timerEvent(QTimerEvent *event);
@@ -80,7 +85,6 @@ protected:
     bool eventFilter( QObject* obj, QEvent* event );
 
 private:
-    void changeVisualizationMode( int mode_index );
     void updateVisualizationLinks( int current_mode );
     void updateVisualizationNodes( int current_mode );
     void updateVisualizationStuff( int current_mode );

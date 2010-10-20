@@ -114,11 +114,11 @@ void Node::paint( QPainter *painter,
                  const QStyleOptionGraphicsItem *option,
                  QWidget *widget ) {
 
-    name_item.setPos( diameter+3, -23 );
+    name_item.setPos( (diameter/2)+3, -23 );
     input_num_item.setText( "inputs " + QString::number(inputs) );
-    input_num_item.setPos( diameter+3, 8 );
+    input_num_item.setPos( (diameter/2)+3, 8 );
     output_num_item.setText( "outputs " + QString::number(outputs) );
-    output_num_item.setPos( diameter+3, -7 );
+    output_num_item.setPos( (diameter/2)+3, -7 );
 
     painter->setOpacity( 0.7 );
 

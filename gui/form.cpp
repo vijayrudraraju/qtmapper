@@ -101,6 +101,10 @@ Form::Form( QWidget *parent ) :
     connect( this->destination_signal_list, SIGNAL(expanded(QModelIndex)),
              this, SLOT(updateMappingView()) );
 
+    connect( this->clear_sources_button, SIGNAL(clicked()),
+             this, SLOT(clearSources()));
+    connect( this->clear_dests_button, SIGNAL(clicked()),
+             this, SLOT(clearDests()));
 
     connect( this->deleteButton, SIGNAL(toggled(bool)),
              this, SLOT(updateDeleteButtonState(bool)) );
@@ -115,6 +119,40 @@ Form::Form( QWidget *parent ) :
     this->size_param_picker->addItem(picker_str);
 
     setWindowTitle( tr("libmapper monitor") );
+
+}
+
+void Form::clearSources() {
+
+    for ( std::list<Node*>::iterator it = this->node_pointer_list.begin();
+            it != this->node_pointer_list.end();
+            it++ ) {
+
+        if ( (*it)->is_source ) {
+
+            (*it)->conflict_flag = 0;
+            this->removeNodeFromSourceView( (*it) );
+
+        }
+
+    }
+
+}
+
+void Form::clearDests() {
+
+    for ( std::list<Node*>::iterator it = this->node_pointer_list.begin();
+            it != this->node_pointer_list.end();
+            it++ ) {
+
+        if ( (*it)->is_destination ) {
+
+            (*it)->conflict_flag = 0;
+            this->removeNodeFromDestinationView( (*it) );
+
+        }
+
+    }
 
 }
 
@@ -154,6 +192,11 @@ void Form::updateDeleteButtonState( bool checked ) {
 
 void Form::beginToDrawMapping( const QModelIndex& index ) {
 
+    printf( "begin valid %d %d %d\n",
+            index.isValid(),
+            index.parent().isValid(),
+            index.parent().parent().isValid() );
+
     if ( !this->makeButton->isChecked() ) {
 
         return;
@@ -164,7 +207,7 @@ void Form::beginToDrawMapping( const QModelIndex& index ) {
     if ( (QStandardItemModel*)index.model() == this->source_model &&
          (this->signal_selected_flag == 1 || this->signal_selected_flag == 0) ) {
 
-        printf("source side!\n");
+        printf("begin source side!\n");
         QPen pen_color;
         pen_color.setColor( Qt::yellow );
         QBrush brush_color;
@@ -182,9 +225,9 @@ void Form::beginToDrawMapping( const QModelIndex& index ) {
         if ( this->selected_source_circle != NULL ) {
             this->mapping_scene.removeItem( this->selected_source_circle );
         }
-        if ( index.parent().isValid() ) {
+        if ( index.isValid() && index.parent().isValid() ) {
 
-            printf("source side is valid!\n");
+            printf("begin source side is valid!\n");
             this->selected_source_circle =
             this->mapping_scene.addEllipse( -1 * (source_signal_rect.height()/2 - 1),
                              source_vertical_offset +
@@ -195,15 +238,18 @@ void Form::beginToDrawMapping( const QModelIndex& index ) {
                              brush_color );
 
             this->selected_signal = index;
+            this->signal_selected_flag = 1;
+
+        } else {
+
+            this->signal_selected_flag = 0;
 
         }
-
-        this->signal_selected_flag = 1;
 
     } else if ( (QStandardItemModel*)index.model() == this->destination_model &&
                 (this->signal_selected_flag == -1 || this->signal_selected_flag == 0) ) {
 
-        printf("destination side!\n");
+        printf("begin destination side!\n");
         QPen pen_color;
         pen_color.setColor( Qt::blue );
         QBrush brush_color;
@@ -223,9 +269,9 @@ void Form::beginToDrawMapping( const QModelIndex& index ) {
                     this->selected_destination_circle
                     );
         }
-        if ( index.parent().isValid() ) {
+        if ( index.isValid() && index.parent().isValid() ) {
 
-            printf("destination side is valid!\n");
+            printf("begin destination side is valid!\n");
             this->selected_destination_circle =
                     this->mapping_scene.addEllipse(
                              graphics_view_2->width() - dest_signal_rect.height() + 4,
@@ -237,16 +283,24 @@ void Form::beginToDrawMapping( const QModelIndex& index ) {
                              brush_color );
 
             this->selected_signal = index;
+            this->signal_selected_flag = -1;
+
+        } else {
+
+            this->signal_selected_flag = 0;
 
         }
-
-        this->signal_selected_flag = -1;
 
     }
 
 }
 
 void Form::finishDrawingMapping( const QModelIndex& index ) {
+
+    printf( "finish valid %d %d %d\n",
+            index.isValid(),
+            index.parent().isValid(),
+            index.parent().parent().isValid() );
 
     if ( !this->makeButton->isChecked() || !signal_selected_flag ) {
 
@@ -257,7 +311,7 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
     if ( (QStandardItemModel*)index.model() == this->source_model &&
          this->signal_selected_flag == -1 ) {
 
-        printf("source side!\n");
+        printf("finish source side!\n");
         QString source_str = "";
         QString dest_str = "";
 
@@ -281,6 +335,7 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
 
         if ( index.isValid() && index.parent().isValid() ) {
 
+            printf("finish source side is valid!\n");
             this->selected_source_circle =
             this->mapping_scene.addEllipse( -1 * (source_signal_rect.height()/2 - 1),
                                      source_vertical_offset +
@@ -306,14 +361,14 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
             this->sendNewMappingRequest( source_str.toLatin1().constData(),
                                          dest_str.toLatin1().constData() );
 
-        }
+            this->signal_selected_flag = 0;
 
-        this->signal_selected_flag = 0;
+        }
 
     } else if ( (QStandardItemModel*)index.model() == this->destination_model &&
                 this->signal_selected_flag == 1 ) {
 
-        printf("destination side!\n");
+        printf("finish destination side!\n");
         QString source_str = "";
         QString dest_str = "";
 
@@ -337,6 +392,7 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
 
         if ( index.isValid() && index.parent().isValid() ) {
 
+            printf("finish dest side is valid!\n");
             this->selected_destination_circle =
             this->mapping_scene.addEllipse(
                      graphics_view_2->width() - dest_signal_rect.height() + 4,
@@ -362,10 +418,9 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
 
             this->sendNewMappingRequest( source_str.toLatin1().constData(),
                                          dest_str.toLatin1().constData() );
+            this->signal_selected_flag = 0;
 
         }
-
-        this->signal_selected_flag = 0;
 
     }
 
@@ -1407,7 +1462,8 @@ void Form::updateVisualizationLinks( int current_mode ) {
                         (*it)->pos().x(),
                         (*it)->pos().y(),
                         (*itt)->destination_node->pos().x(),
-                        (*itt)->destination_node->pos().y()
+                        (*itt)->destination_node->pos().y(),
+                        QPen(Qt::gray)
                         )
                     );
                 this->visualization_links.back()->setZValue( -100 );
