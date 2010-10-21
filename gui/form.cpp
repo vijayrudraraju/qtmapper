@@ -31,7 +31,7 @@ Form::Form( QWidget *parent ) :
     graphics_view->scale( qreal(0.7), qreal(0.7) );
     graphics_view->setMinimumSize( 600, 300 );
     graphics_view->setAlignment( Qt::AlignLeft|Qt::AlignTop );
-    graphics_view->setSceneRect( -50, -50, 4000, 2000 );
+    graphics_view->setSceneRect( -400, -400, 4000, 4000 );
 
     graphics_view_2->setScene( &mapping_scene );
     graphics_view_2->installEventFilter( this );
@@ -46,12 +46,12 @@ Form::Form( QWidget *parent ) :
     source_model = new QStandardItemModel( 0, 5 );
     source_model->setHorizontalHeaderLabels( header_labels );
     source_list->setModel( source_model );
-    source_list->setMinimumSize( 600, 300 );
+    source_list->setMinimumSize( 600, 200 );
 
     destination_model = new QStandardItemModel( 0, 5 );
     destination_model->setHorizontalHeaderLabels( header_labels );
     destination_list->setModel( destination_model );
-    destination_list->setMinimumSize( 600, 300 );
+    destination_list->setMinimumSize( 600, 200 );
 
     source_signal_list->setModel( source_model );
     destination_signal_list->setModel( destination_model );
@@ -67,7 +67,7 @@ Form::Form( QWidget *parent ) :
     this->selected_source_circle = NULL;
     this->selected_destination_circle = NULL;
 
-    connect( this->mode_picker, SIGNAL(currentIndexChanged(int)),
+    connect( this->vis_mode_toggle, SIGNAL(currentIndexChanged(int)),
              this, SLOT(changeVisualizationMode(int)) );
 
     connect( selection_mode_toggle, SIGNAL(currentChanged(int)),
@@ -110,13 +110,32 @@ Form::Form( QWidget *parent ) :
              this, SLOT(updateDeleteButtonState(bool)) );
 
     QString picker_str = "cluster";
-    this->mode_picker->addItem(picker_str);
+    //this->vis_mode_toggle->addItem(picker_str);
+
     picker_str = "inputs/outputs";
     this->x_param_picker->addItem(picker_str);
+
     picker_str = "# of signals";
     this->y_param_picker->addItem(picker_str);
+
     picker_str = "# of signals";
     this->size_param_picker->addItem(picker_str);
+    this->size_param_picker_2->addItem(picker_str);
+
+    picker_str = "# of signals";
+    this->sides_param_picker->addItem(picker_str);
+    this->sides_param_picker_2->addItem(picker_str);
+
+    picker_str = "# of signals";
+    this->concavity_param_picker->addItem(picker_str);
+    this->concavity_param_picker_2->addItem(picker_str);
+
+    picker_str = "# of signals";
+    this->color_param_picker->addItem(picker_str);
+    this->color_param_picker_2->addItem(picker_str);
+
+    picker_str = "# of mappings";
+    this->dist_param_picker->addItem(picker_str);
 
     setWindowTitle( tr("libmapper monitor") );
 
@@ -952,7 +971,7 @@ void Form::updateEditSelectionMode( int index ) {
     if ( index == 0 ) {
 
         printf( "selected neighborhood tab %d\n", index );
-        this->changeVisualizationMode( this->mode_picker->currentIndex() );
+        this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
 
     } else if ( index == 1 ) {
 
@@ -1219,7 +1238,7 @@ void Form::addNewSignal( mapper_db_signal record ) {
 
     }
 
-    this->changeVisualizationMode( this->mode_picker->currentIndex() );
+    this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
 
 }
 
@@ -1246,7 +1265,7 @@ void Form::removeDevice( const char* name ) {
     }
     this->node_pointer_list.remove_if( Utility::isNameMatch );
 
-    this->changeVisualizationMode( this->mode_picker->currentIndex() );
+    this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
 
 }
 
@@ -1330,7 +1349,7 @@ void Form::addNewDevice( const char* name,
                       this,
                       SLOT(updateReleasedNode(Node*)));
 
-    this->changeVisualizationMode( this->mode_picker->currentIndex() );
+    this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
 
 }
 
@@ -1391,7 +1410,6 @@ void Form::updateVisualizationNodes( int current_mode ) {
 
         }
 
-
         cluster_1.sort( Utility::nodeSortOutputsFunction );
         cluster_2.sort( Utility::nodeSortInputsFunction );
 
@@ -1421,6 +1439,26 @@ void Form::updateVisualizationNodes( int current_mode ) {
             (*it)->setPos( cluster_3_x,
                            cluster_3_y );
             cluster_3_y += (*it)->diameter + 28;
+
+        }
+
+    }
+
+    else if ( current_mode == 1 ) {
+
+        for ( std::list<Node*>::iterator it =
+                this->node_pointer_list.begin();
+              it != this->node_pointer_list.end();
+              it++ ) {
+
+            for ( std::list<qt_mapping>::iterator itt =
+                    this->(*it)->destination_list.begin();
+                    itt != this->(*it)->destination_list.end();
+                    itt++ ) {
+
+
+
+            }
 
         }
 
