@@ -138,6 +138,12 @@
            </property>
            <item>
             <widget class="QPushButton" name="clear_dests_button">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
               <string>clear selection</string>
              </property>
@@ -348,6 +354,12 @@
            </item>
            <item row="1" column="4">
             <widget class="QLabel" name="label_8">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
               <string>concavity</string>
              </property>

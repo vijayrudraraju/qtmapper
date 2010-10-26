@@ -21,6 +21,8 @@ Node::Node(QGraphicsView *graphWidget)
     inputs = 0;
     outputs = 0;
     diameter = 20;
+    sides = 2;
+    concavity = 1.0;
 
     input_num_item.setParentItem( this );
     input_num_item.setPos( 23, 6 );
@@ -114,34 +116,175 @@ void Node::paint( QPainter *painter,
                  const QStyleOptionGraphicsItem *option,
                  QWidget *widget ) {
 
-    name_item.setPos( (diameter/2)+3, -23 );
-    input_num_item.setText( "inputs " + QString::number(inputs) );
-    input_num_item.setPos( (diameter/2)+3, 8 );
+    name_item.setPos( (diameter/2)+5, -25 );
     output_num_item.setText( "outputs " + QString::number(outputs) );
-    output_num_item.setPos( (diameter/2)+3, -7 );
+    output_num_item.setPos( (diameter/2)+5, -10 );
+    input_num_item.setText( "inputs " + QString::number(inputs) );
+    input_num_item.setPos( (diameter/2)+5, 5 );
 
     painter->setOpacity( 0.7 );
+    painter->setPen(Qt::NoPen);
 
     if ( is_source ) {
 
-        painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::yellow);
-        painter->drawEllipse( -(diameter/2), -(diameter/2),
-                             diameter, diameter);
 
     } else if ( is_destination ) {
 
-        painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::blue);
-        painter->drawEllipse( -(diameter/2), -(diameter/2),
-                             diameter, diameter);
 
     } else {
 
-        painter->setPen(Qt::NoPen);
         painter->setBrush(Qt::darkGray);
-        painter->drawEllipse( -(diameter/2), -(diameter/2),
-                             diameter, diameter);
+
+    }
+
+    QPainterPath path;
+    this->diameter = ( this->outputs + this->inputs + 1 ) * 20;
+    double half = diameter/2;
+    double quarter = diameter/4;
+
+    double quad_x;
+    double quad_y;
+
+    if ( sides == 0 ) {
+
+        painter->drawEllipse( -half, -half,
+                            diameter, diameter);
+
+    } else if ( sides == 1) {
+
+        QRectF rect( -half, -half, diameter, diameter );
+        painter->drawChord( rect, 135 * 16, 270 * 16 );
+
+    } else if ( sides == 2 ) {
+
+        path.moveTo( -half, -half );
+
+        path.arcTo( -half, -half, diameter, diameter, 135.0, 90.0 );
+        path.lineTo( half / sqrt(2) , half / sqrt(2) );
+        path.arcTo( -half, -half, diameter, diameter, 315.0, 90.0 );
+        path.lineTo( -half / sqrt(2), -half / sqrt(2) );
+
+        painter->drawPath( path );
+
+    } else if ( sides == 3 ) {
+
+        path.moveTo( 0, -half );
+
+        //mid_x = ( 0 + (quarter*sqrt(3)) ) / 2;
+        //mid_y = ( -half + quarter ) / 2;
+        //neg_recip_slope = ( quarter - (-half) ) / ( (quarter*sqrt(3)) - 0 );
+        //y_inter = mid_y - ( mid_x * neg_recip_slope );
+        Utility::findQuadPoint( 0, -half, quarter*sqrt(3), quarter,
+                                &quad_x, &quad_y, 30.0 );
+        path.quadTo( quad_x, quad_y,
+                     quarter * sqrt(3), quarter );
+        Utility::findQuadPoint( quarter*sqrt(3), quarter,
+                                -quarter*sqrt(3), quarter,
+                                &quad_x, &quad_y, 30.0 );
+        path.quadTo( quad_x, quad_y, -quarter * sqrt(3), quarter );
+        //path.quadTo( quarter * sqrt(3), quarter, -quarter * sqrt(3), quarter );
+        path.quadTo( -quarter * sqrt(3), quarter,
+                     0, -half );
+
+        painter->drawPath( path );
+
+    } else if ( sides == 4 ) {
+
+        path.moveTo( 0, -half );
+
+        path.quadTo( 0, -half,
+                     half, 0 );
+        path.quadTo( half, 0,
+                     0, half );
+        path.quadTo( 0, half,
+                     -half, 0 );
+        path.quadTo( -half, 0,
+                     0, -half );
+
+        painter->drawPath( path );
+
+    } else if ( sides == 5 ) {
+
+        path.moveTo( 0, -half );
+
+        path.quadTo( 0, -half,
+                     0.95 * half, 0.31 * -half );
+        path.quadTo( 0.95 * half, 0.31 * -half,
+                     0.59 * half, 0.81 * half );
+        path.quadTo( 0.59 * half, 0.81 * half,
+                     0.59 * -half, 0.81 * half );
+        path.quadTo( 0.59 * -half, 0.81 * half,
+                     0.95 * -half, 0.31 * -half );
+        path.quadTo( 0.95 * -half, 0.31 * -half,
+                     0, -half );
+
+        painter->drawPath( path );
+
+    } else if ( sides == 6 ) {
+
+        path.moveTo( 0, -half );
+
+        path.quadTo( 0, -half,
+                     sqrt(3) * quarter, 0.5 * -half );
+        path.quadTo( sqrt(3) * quarter, 0.5 * -half,
+                     sqrt(3) * quarter, 0.5 * half );
+        path.quadTo( sqrt(3) * quarter, 0.5 * half,
+                     0, half );
+        path.quadTo( 0, half,
+                     sqrt(3) * -quarter, 0.5 * half );
+        path.quadTo( sqrt(3) * -quarter, 0.5 * half,
+                     sqrt(3) * -quarter, 0.5 * -half );
+        path.quadTo( sqrt(3) * -quarter, 0.5 * -half,
+                     0, -half );
+
+        painter->drawPath( path );
+
+    } else if ( sides == 7 ) {
+
+        path.moveTo( 0, -half );
+
+        path.quadTo( 0, -half,
+                     0.78 * half, 0.62 * -half );
+        path.quadTo( 0.78 * half, 0.62 * -half,
+                     0.97 * half, 0.22 * half );
+        path.quadTo( 0.97 * half, 0.22 * half,
+                     0.43 * half, 0.9 * half );
+        path.quadTo( 0.43 * half, 0.9 * half,
+                     0.43 * -half, 0.9 * half );
+        path.quadTo( 0.43 * -half, 0.9 * half,
+                     0.97 * -half, 0.22 * half );
+        path.quadTo( 0.97 * -half, 0.22 * half,
+                      0.78 * -half, 0.62 * -half );
+        path.quadTo( 0.78 * -half, 0.62 * -half,
+                     0, -half );
+
+        painter->drawPath( path );
+
+    } else if ( sides == 8 ) {
+
+        path.moveTo( 0, -half );
+
+        path.quadTo( 0, -half,
+                    1/sqrt(2) * half, 1/sqrt(2) * -half );
+        path.quadTo( 1/sqrt(2) * half, 1/sqrt(2) * -half,
+                     half, 0 );
+        path.quadTo( half, 0,
+                     1/sqrt(2) * half, 1/sqrt(2) * half );
+        path.quadTo( 1/sqrt(2) * half, 1/sqrt(2) * half,
+                     0, half );
+
+        path.quadTo( 0, half,
+                     1/sqrt(2) * -half, 1/sqrt(2) * half );
+        path.quadTo( 1/sqrt(2) * -half, 1/sqrt(2) * half,
+                     -half, 0 );
+        path.quadTo( -half, 0,
+                     1/sqrt(2) * -half, 1/sqrt(2) * -half );
+        path.quadTo( 1/sqrt(2) * -half, 1/sqrt(2) * -half,
+                     0, -half );
+
+        painter->drawPath( path );
 
     }
 

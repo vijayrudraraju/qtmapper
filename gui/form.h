@@ -87,6 +87,8 @@ protected:
 private:
     void updateVisualizationLinks( int current_mode );
     void updateVisualizationNodes( int current_mode );
+    void updateVisualizationSides( int current_mode );
+    void updateVisualizationConcavity( int current_mode );
     void updateVisualizationStuff( int current_mode );
 
     void addNodeToDestinationView( Node* the_node );

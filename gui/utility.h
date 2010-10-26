@@ -2,6 +2,7 @@
 #define UTILITY_H
 
 #include "node.h"
+#include <math.h>
 
 class Utility {
 public:
@@ -17,6 +18,12 @@ public:
     static bool isNameMatch( Node* i );
 
     static bool findMapping( qt_mapping i );
+
+    static void findQuadPoint( double p_1_x, double p_1_y,
+                               double p_2_x, double p_2_y,
+                               double* quad_x, double* quad_y,
+                               double concavity );
+
 };
 
 #endif // UTILITY_H

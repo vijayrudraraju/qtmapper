@@ -62,6 +62,8 @@ public:
     int inputs;
     int outputs;
     int diameter;
+    int sides;
+    float concavity;
 
     std::list<qt_mapping> destination_list;
 

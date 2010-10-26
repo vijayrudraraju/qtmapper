@@ -109,33 +109,35 @@ Form::Form( QWidget *parent ) :
     connect( this->deleteButton, SIGNAL(toggled(bool)),
              this, SLOT(updateDeleteButtonState(bool)) );
 
-    QString picker_str = "cluster";
-    //this->vis_mode_toggle->addItem(picker_str);
+    QString picker_str[7];
+    picker_str[0] = "# of signals";
+    picker_str[1] = "# of inputs";
+    picker_str[2] = "# of outputs";
+    picker_str[3] = "# of connections";
+    picker_str[4] = "position x";
+    picker_str[5] = "temperature";
+    picker_str[6] = "update rate";
 
-    picker_str = "inputs/outputs";
-    this->x_param_picker->addItem(picker_str);
+    for ( int i=0; i<7; i++ ) {
 
-    picker_str = "# of signals";
-    this->y_param_picker->addItem(picker_str);
+        this->x_param_picker->addItem( picker_str[i] );
+        this->y_param_picker->addItem( picker_str[i] );
 
-    picker_str = "# of signals";
-    this->size_param_picker->addItem(picker_str);
-    this->size_param_picker_2->addItem(picker_str);
+        this->size_param_picker->addItem( picker_str[i] );
+        this->size_param_picker_2->addItem( picker_str[i] );
 
-    picker_str = "# of signals";
-    this->sides_param_picker->addItem(picker_str);
-    this->sides_param_picker_2->addItem(picker_str);
+        this->sides_param_picker->addItem( picker_str[i] );
+        this->sides_param_picker_2->addItem( picker_str[i] );
 
-    picker_str = "# of signals";
-    this->concavity_param_picker->addItem(picker_str);
-    this->concavity_param_picker_2->addItem(picker_str);
+        this->concavity_param_picker->addItem( picker_str[i] );
+        this->concavity_param_picker_2->addItem( picker_str[i] );
 
-    picker_str = "# of signals";
-    this->color_param_picker->addItem(picker_str);
-    this->color_param_picker_2->addItem(picker_str);
+        this->color_param_picker->addItem( picker_str[i] );
+        this->color_param_picker_2->addItem( picker_str[i] );
 
-    picker_str = "# of mappings";
-    this->dist_param_picker->addItem(picker_str);
+        this->dist_param_picker->addItem( picker_str[i] );
+
+    }
 
     setWindowTitle( tr("libmapper monitor") );
 
@@ -1278,6 +1280,8 @@ void Form::addNewDevice( const char* name,
     std::stringstream out;
     Node* new_device = new Node(graphics_view);
 
+    new_device->sides = 3;
+
     //printf( "addNewDevice(  ) \n" );
 
     this->node_pointer_list.push_back( new_device );
@@ -1387,6 +1391,7 @@ void Form::updateVisualizationNodes( int current_mode ) {
             if ( (*it)->source_model_list[0]->rowCount() == 0 &&
                  (*it)->destination_model_list[0]->rowCount() == 0 ) {
 
+                //(*it)->sides = 3;
                 cluster_3.push_back((*it));
                 continue;
 
@@ -1395,17 +1400,19 @@ void Form::updateVisualizationNodes( int current_mode ) {
             if ( (*it)->source_model_list[0]->rowCount() >=
                  (*it)->destination_model_list[0]->rowCount() ) {
 
+                //(*it)->sides = 2;
                 cluster_1.push_back((*it));
 
             } else {
 
+                //(*it)->sides = 0;
                 cluster_2.push_back((*it));
 
             }
 
             (*it)->outputs = (*it)->source_model_list[0]->rowCount();
             (*it)->inputs = (*it)->destination_model_list[0]->rowCount();
-            (*it)->diameter = ((*it)->outputs + (*it)->inputs + 1) * 20;
+            (*it)->diameter = ( (*it)->outputs + (*it)->inputs + 1 ) * 20;
             (*it)->update();
 
         }
@@ -1420,7 +1427,7 @@ void Form::updateVisualizationNodes( int current_mode ) {
 
             (*it)->setPos( cluster_1_x,
                            cluster_1_y );
-            cluster_1_y += (*it)->diameter + 28;
+            cluster_1_y += (*it)->diameter + 38;
 
         } for ( std::list<Node*>::iterator it =
                 cluster_2.begin();
@@ -1429,7 +1436,7 @@ void Form::updateVisualizationNodes( int current_mode ) {
 
             (*it)->setPos( cluster_2_x,
                            cluster_2_y );
-            cluster_2_y += (*it)->diameter + 28;
+            cluster_2_y += (*it)->diameter + 38;
 
         } for ( std::list<Node*>::iterator it =
                 cluster_3.begin();
@@ -1438,7 +1445,7 @@ void Form::updateVisualizationNodes( int current_mode ) {
 
             (*it)->setPos( cluster_3_x,
                            cluster_3_y );
-            cluster_3_y += (*it)->diameter + 28;
+            cluster_3_y += (*it)->diameter + 38;
 
         }
 
@@ -1452,8 +1459,8 @@ void Form::updateVisualizationNodes( int current_mode ) {
               it++ ) {
 
             for ( std::list<qt_mapping>::iterator itt =
-                    this->(*it)->destination_list.begin();
-                    itt != this->(*it)->destination_list.end();
+                    (*it)->destination_list.begin();
+                    itt != (*it)->destination_list.end();
                     itt++ ) {
 
 
@@ -1513,9 +1520,23 @@ void Form::updateVisualizationLinks( int current_mode ) {
 
 }
 
+void Form::updateVisualizationSides( int current_mode ) {
+
+
+
+}
+
+void Form::updateVisualizationConcavity( int current_mode ) {
+
+
+
+}
+
 void Form::updateVisualizationStuff( int current_mode ) {
 
     this->updateVisualizationNodes( current_mode );
     this->updateVisualizationLinks( current_mode );
+    this->updateVisualizationSides( current_mode );
+    this->updateVisualizationConcavity( current_mode );
 
 }
