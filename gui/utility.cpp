@@ -48,14 +48,29 @@ void Utility::findQuadPoint( double p_1_x, double p_1_y,
     double mid_x = ( p_1_x + p_2_x ) / 2;
     double mid_y = ( p_1_y + p_2_y ) / 2;
     double slope = ( p_2_y - p_1_y ) / ( p_2_x - p_1_x );
-    double y_inter = mid_y - ( mid_x * slope );
+    double neg_recip = 1 / slope;
+    //double y_inter = mid_y - ( mid_x * neg_recip );
 
-    double x_change = abs( sqrt(pow(concavity, 2) / (1 + pow(slope, 2))) );
-    double y_change = abs( slope * x_change );
+    double x_change = abs( sqrt(pow(concavity, 2) / (1 + pow(neg_recip, 2))) );
+    double y_change = abs( neg_recip * x_change );
+
+    if ( p_2_y - p_1_y == 0 ) {
+
+        x_change = 0;
+        y_change = abs(concavity);
+
+    }
+
+    if ( p_2_x - p_1_x == 0 ) {
+
+        x_change = abs(concavity);
+        y_change = 0;
+
+    }
 
     int direction;
 
-    if ( p_2_x - p_1_x > 0 ) {
+    if ( p_2_x - p_1_x >= 0 ) {
 
         if ( p_2_y - p_1_y >= 0 ) {
 

@@ -100,7 +100,9 @@ private:
 
     int timerId;
 
-    std::list<Node*> node_pointer_list;
+    std::list<Node*> master_source_node_pointer_list;
+    std::list<Node*> master_dest_node_pointer_list;
+
     std::list<Link*> displayed_mapping_list;
     std::list<QGraphicsItem*> visualization_links;
 
@@ -117,8 +119,8 @@ private:
     mapper_db db;
     mapper_monitor mon;
 
-    QStandardItemModel* source_model;
-    QStandardItemModel* destination_model;
+    QStandardItemModel* displayed_source_model;
+    QStandardItemModel* displayed_destination_model;
 
     QGraphicsItem* selected_source_circle;
     QGraphicsItem* selected_destination_circle;

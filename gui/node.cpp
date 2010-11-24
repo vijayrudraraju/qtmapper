@@ -23,6 +23,9 @@ Node::Node(QGraphicsView *graphWidget)
     diameter = 20;
     sides = 2;
     concavity = 1.0;
+    this->r = 155;
+    this->g = 155;
+    this->b = 155;
 
     input_num_item.setParentItem( this );
     input_num_item.setPos( 23, 6 );
@@ -106,7 +109,7 @@ void Node::removeMapping( Node* destination,
 
 QRectF Node::boundingRect() const {
 
-    qreal adjust = 0;
+    qreal adjust = 120;
     return QRectF( -(diameter/2) - adjust, -(diameter/2) - adjust,
                   diameter + 20 + adjust, diameter + 10 + adjust );
 
@@ -135,17 +138,45 @@ void Node::paint( QPainter *painter,
 
     } else {
 
-        painter->setBrush(Qt::darkGray);
+        //painter->setBrush(Qt::darkGray);
+        painter->setBrush( QBrush( QColor( this->r, this->g, this->b ) ) );
 
     }
 
-    QPainterPath path;
     this->diameter = ( this->outputs + this->inputs + 1 ) * 20;
     double half = diameter/2;
     double quarter = diameter/4;
 
     double quad_x;
     double quad_y;
+    double concavity = 0.0;
+
+    QPainterPath path;
+    qreal adjust = 120;
+    /*
+    path.moveTo( -(diameter/2) - adjust, -(diameter/2) - adjust );
+    path.lineTo( diameter + 20 + adjust, -(diameter/2) - adjust );
+    path.lineTo( diameter + 20 + adjust, diameter + 10 + adjust );
+    path.lineTo( -(diameter/2) - adjust, diameter + 10 + adjust );
+    path.lineTo( -(diameter/2) - adjust, -(diameter/2) - adjust );
+    painter->drawPath( path );
+    */
+
+    if ( this->outputs > this->inputs ) {
+
+        concavity = 60.0;
+
+    } else if ( this->inputs > this->outputs ) {
+
+        concavity = -20.0;
+
+    } else if ( this->inputs == this->outputs ) {
+
+        concavity = 0.0;
+
+    }
+
+    sides = this->outputs + this->inputs;
 
     if ( sides == 0 ) {
 
@@ -154,17 +185,33 @@ void Node::paint( QPainter *painter,
 
     } else if ( sides == 1) {
 
-        QRectF rect( -half, -half, diameter, diameter );
-        painter->drawChord( rect, 135 * 16, 270 * 16 );
+        path.arcTo( -half, -half, diameter, diameter, 135.0, 270.0 );
+
+        Utility::findQuadPoint( half / sqrt(2) , -half / sqrt(2),
+                                -half / sqrt(2) , -half / sqrt(2),
+                                &quad_x, &quad_y, -concavity );
+        path.quadTo( quad_x, quad_y,
+                     -half / sqrt(2) , -half / sqrt(2) );
+
+        painter->drawPath( path );
 
     } else if ( sides == 2 ) {
 
-        path.moveTo( -half, -half );
-
         path.arcTo( -half, -half, diameter, diameter, 135.0, 90.0 );
-        path.lineTo( half / sqrt(2) , half / sqrt(2) );
+
+        Utility::findQuadPoint( -half / sqrt(2) , half / sqrt(2),
+                                half / sqrt(2) , half / sqrt(2),
+                                &quad_x, &quad_y, -concavity );
+        path.quadTo( quad_x, quad_y,
+                     half / sqrt(2) , half / sqrt(2) );
+
         path.arcTo( -half, -half, diameter, diameter, 315.0, 90.0 );
-        path.lineTo( -half / sqrt(2), -half / sqrt(2) );
+
+        Utility::findQuadPoint( half / sqrt(2) , -half / sqrt(2),
+                                -half / sqrt(2) , -half / sqrt(2),
+                                &quad_x, &quad_y, -concavity );
+        path.quadTo( quad_x, quad_y,
+                     -half / sqrt(2) , -half / sqrt(2) );
 
         painter->drawPath( path );
 
@@ -172,21 +219,20 @@ void Node::paint( QPainter *painter,
 
         path.moveTo( 0, -half );
 
-        //mid_x = ( 0 + (quarter*sqrt(3)) ) / 2;
-        //mid_y = ( -half + quarter ) / 2;
-        //neg_recip_slope = ( quarter - (-half) ) / ( (quarter*sqrt(3)) - 0 );
-        //y_inter = mid_y - ( mid_x * neg_recip_slope );
         Utility::findQuadPoint( 0, -half, quarter*sqrt(3), quarter,
-                                &quad_x, &quad_y, 30.0 );
+                                &quad_x, &quad_y, concavity );
         path.quadTo( quad_x, quad_y,
                      quarter * sqrt(3), quarter );
+
         Utility::findQuadPoint( quarter*sqrt(3), quarter,
                                 -quarter*sqrt(3), quarter,
-                                &quad_x, &quad_y, 30.0 );
+                                &quad_x, &quad_y, concavity );
         path.quadTo( quad_x, quad_y, -quarter * sqrt(3), quarter );
-        //path.quadTo( quarter * sqrt(3), quarter, -quarter * sqrt(3), quarter );
-        path.quadTo( -quarter * sqrt(3), quarter,
-                     0, -half );
+
+        Utility::findQuadPoint( -quarter*sqrt(3), quarter,
+                                0, -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y, 0, -half );
 
         painter->drawPath( path );
 
@@ -194,13 +240,27 @@ void Node::paint( QPainter *painter,
 
         path.moveTo( 0, -half );
 
-        path.quadTo( 0, -half,
+        Utility::findQuadPoint( 0, -half, half, 0,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      half, 0 );
-        path.quadTo( half, 0,
+
+        Utility::findQuadPoint( half, 0,
+                                0, half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0, half );
-        path.quadTo( 0, half,
+
+        Utility::findQuadPoint( 0, half,
+                                -half, 0,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      -half, 0 );
-        path.quadTo( -half, 0,
+
+        Utility::findQuadPoint( -half, 0,
+                                0, -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0, -half );
 
         painter->drawPath( path );
@@ -209,15 +269,34 @@ void Node::paint( QPainter *painter,
 
         path.moveTo( 0, -half );
 
-        path.quadTo( 0, -half,
+        Utility::findQuadPoint( 0, -half,
+                                0.95 * half, 0.31 * -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0.95 * half, 0.31 * -half );
-        path.quadTo( 0.95 * half, 0.31 * -half,
+
+        Utility::findQuadPoint( 0.95 * half, 0.31 * -half,
+                                0.59 * half, 0.81 * half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0.59 * half, 0.81 * half );
-        path.quadTo( 0.59 * half, 0.81 * half,
+
+        Utility::findQuadPoint( 0.59 * half, 0.81 * half,
+                                0.59 * -half, 0.81 * half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0.59 * -half, 0.81 * half );
-        path.quadTo( 0.59 * -half, 0.81 * half,
+
+        Utility::findQuadPoint( 0.59 * -half, 0.81 * half,
+                                0.95 * -half, 0.31 * -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0.95 * -half, 0.31 * -half );
-        path.quadTo( 0.95 * -half, 0.31 * -half,
+
+        Utility::findQuadPoint( 0.95 * -half, 0.31 * -half,
+                                0, -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0, -half );
 
         painter->drawPath( path );
@@ -226,17 +305,40 @@ void Node::paint( QPainter *painter,
 
         path.moveTo( 0, -half );
 
-        path.quadTo( 0, -half,
+        Utility::findQuadPoint( 0, -half,
+                                sqrt(3) * quarter, 0.5 * -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      sqrt(3) * quarter, 0.5 * -half );
-        path.quadTo( sqrt(3) * quarter, 0.5 * -half,
+
+        Utility::findQuadPoint( sqrt(3) * quarter, 0.5 * -half,
+                                sqrt(3) * quarter, 0.5 * half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      sqrt(3) * quarter, 0.5 * half );
-        path.quadTo( sqrt(3) * quarter, 0.5 * half,
+
+        Utility::findQuadPoint( sqrt(3) * quarter, 0.5 * half,
+                                0, half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0, half );
-        path.quadTo( 0, half,
+
+        Utility::findQuadPoint( 0, half,
+                                sqrt(3) * -quarter, 0.5 * half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      sqrt(3) * -quarter, 0.5 * half );
-        path.quadTo( sqrt(3) * -quarter, 0.5 * half,
+
+        Utility::findQuadPoint( sqrt(3) * -quarter, 0.5 * half,
+                                sqrt(3) * -quarter, 0.5 * -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      sqrt(3) * -quarter, 0.5 * -half );
-        path.quadTo( sqrt(3) * -quarter, 0.5 * -half,
+
+        Utility::findQuadPoint( sqrt(3) * -quarter, 0.5 * -half,
+                                0, -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0, -half );
 
         painter->drawPath( path );
@@ -245,19 +347,46 @@ void Node::paint( QPainter *painter,
 
         path.moveTo( 0, -half );
 
-        path.quadTo( 0, -half,
+        Utility::findQuadPoint( 0, -half,
+                                0.78 * half, 0.62 * -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0.78 * half, 0.62 * -half );
-        path.quadTo( 0.78 * half, 0.62 * -half,
+
+        Utility::findQuadPoint( 0.78 * half, 0.62 * -half,
+                                0.97 * half, 0.22 * half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0.97 * half, 0.22 * half );
-        path.quadTo( 0.97 * half, 0.22 * half,
+
+        Utility::findQuadPoint( 0.97 * half, 0.22 * half,
+                                0.43 * half, 0.9 * half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0.43 * half, 0.9 * half );
-        path.quadTo( 0.43 * half, 0.9 * half,
+
+        Utility::findQuadPoint( 0.43 * half, 0.9 * half,
+                                0.43 * -half, 0.9 * half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0.43 * -half, 0.9 * half );
-        path.quadTo( 0.43 * -half, 0.9 * half,
+
+        Utility::findQuadPoint( 0.43 * -half, 0.9 * half,
+                                0.97 * -half, 0.22 * half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0.97 * -half, 0.22 * half );
-        path.quadTo( 0.97 * -half, 0.22 * half,
-                      0.78 * -half, 0.62 * -half );
-        path.quadTo( 0.78 * -half, 0.62 * -half,
+
+        Utility::findQuadPoint( 0.97 * -half, 0.22 * half,
+                                0.78 * -half, 0.62 * -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
+                     0.78 * -half, 0.62 * -half );
+
+        Utility::findQuadPoint( 0.78 * -half, 0.62 * -half,
+                                0, -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0, -half );
 
         painter->drawPath( path );
@@ -266,23 +395,54 @@ void Node::paint( QPainter *painter,
 
         path.moveTo( 0, -half );
 
-        path.quadTo( 0, -half,
+        Utility::findQuadPoint( 0, -half,
+                                1/sqrt(2) * half, 1/sqrt(2) * -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                     1/sqrt(2) * half, 1/sqrt(2) * -half );
-        path.quadTo( 1/sqrt(2) * half, 1/sqrt(2) * -half,
+
+        Utility::findQuadPoint( 1/sqrt(2) * half, 1/sqrt(2) * -half,
+                                half, 0,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      half, 0 );
-        path.quadTo( half, 0,
+
+        Utility::findQuadPoint( half, 0,
+                                1/sqrt(2) * half, 1/sqrt(2) * half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      1/sqrt(2) * half, 1/sqrt(2) * half );
-        path.quadTo( 1/sqrt(2) * half, 1/sqrt(2) * half,
+
+        Utility::findQuadPoint( 1/sqrt(2) * half, 1/sqrt(2) * half,
+                                0, half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0, half );
 
-        path.quadTo( 0, half,
+        Utility::findQuadPoint( 0, half,
+                                1/sqrt(2) * -half, 1/sqrt(2) * half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      1/sqrt(2) * -half, 1/sqrt(2) * half );
-        path.quadTo( 1/sqrt(2) * -half, 1/sqrt(2) * half,
+
+        Utility::findQuadPoint( 1/sqrt(2) * -half, 1/sqrt(2) * half,
+                                -half, 0,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      -half, 0 );
-        path.quadTo( -half, 0,
+
+        Utility::findQuadPoint( -half, 0,
+                                1/sqrt(2) * -half, 1/sqrt(2) * -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      1/sqrt(2) * -half, 1/sqrt(2) * -half );
-        path.quadTo( 1/sqrt(2) * -half, 1/sqrt(2) * -half,
+
+        Utility::findQuadPoint( 1/sqrt(2) * -half, 1/sqrt(2) * -half,
+                                0, -half,
+                                &quad_x, &quad_y, concavity );
+        path.quadTo( quad_x, quad_y,
                      0, -half );
+
 
         painter->drawPath( path );
 

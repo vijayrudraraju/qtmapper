@@ -17,36 +17,8 @@
 
 #include "form.h"
 
-mapper_monitor qtmapper = 0;
 int default_port = 9000;
-
-int setup_qtmapper(  ) {
-
-    qtmapper = mapper_monitor_new();
-
-    if ( !qtmapper ) {
-
-        return 1;
-
-    }
-
-    printf( "qtmapper created\n" );
-
-    return 0;
-
-}
-void cleanup_qtmapper(  ) {
-
-    if ( qtmapper ) {
-
-        printf( "freeing qtmapper..." );
-        mapper_monitor_free( qtmapper );
-        printf( "ok\n" );
-
-    }
-
-}
-
+mapper_monitor qtmapper = 0;
 Form* form;
 
 void dbDeviceCallbackFunction( mapper_db_device record,
@@ -57,12 +29,14 @@ void dbDeviceCallbackFunction( mapper_db_device record,
     printf( "record->name %s action %d user %p \n",
             record->name, action, user );
 
+
+
     if ( action == MDB_NEW ) {
 
         form->addNewDevice( record->name,
                             record->host,
                             record->port,
-                            record->canAlias );
+                            false );
         mapper_monitor_request_signals_by_name( qtmapper, record->name );
         mapper_monitor_request_links_by_name( qtmapper, record->name );
         mapper_monitor_request_mappings_by_name( qtmapper, record->name );
@@ -80,8 +54,8 @@ void dbSignalCallbackFunction( mapper_db_signal record,
                                 void* user ) {
 
     printf( "Form::db_signal_callback_function( ... )\n" );
-    printf( "record->name %s action %d user %p \n",
-            record->name, action, user );
+    printf( "name %s type %c is_output %d action %d user %p \n",
+            record->name, record->type, record->is_output, action, user );
     if ( action == MDB_NEW ) {
 
         form->addNewSignal( record );
@@ -109,8 +83,10 @@ void dbMappingCallbackFunction( mapper_db_mapping record,
                                 void* user ) {
 
     printf( "Form::db_mapping_callback_function( ... )\n" );
-    printf( "record->src %s record->dest %s action %d user %p \n",
-            record->src_name, record->dest_name, action, user );
+    printf( "src_name %s dest_name %s src_type %c dest_type %c action %d user %p \n",
+            record->src_name, record->dest_name,
+            record->src_type, record->dest_type,
+            action, user );
     if ( action == MDB_NEW ) {
 
         form->addNewMapping( record );
@@ -136,7 +112,32 @@ void wait_local_devices() {
 
 }
 
-//const char* Form::device_search_term = "";
+int setup_qtmapper(  ) {
+
+    qtmapper = mapper_monitor_new();
+
+    if ( !qtmapper ) {
+
+        return 1;
+
+    }
+
+    printf( "qtmapper created\n" );
+
+    return 0;
+
+}
+void cleanup_qtmapper(  ) {
+
+    if ( qtmapper ) {
+
+        printf( "freeing qtmapper..." );
+        mapper_monitor_free( qtmapper );
+        printf( "ok\n" );
+
+    }
+
+}
 
 int main( int argc, char *argv[] ) {
 

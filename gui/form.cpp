@@ -15,7 +15,7 @@ Form::Form( QWidget *parent ) :
 
     timer = new QTimer( this );
     QObject::connect( timer, SIGNAL(timeout()), this, SLOT(update()) );
-    timer->start( 500 );
+    timer->start( 1000 );
 
     scene = new MapperGraphicsScene( graphics_view );
     scene->setItemIndexMethod( QGraphicsScene::NoIndex );
@@ -43,18 +43,18 @@ Form::Form( QWidget *parent ) :
     header_edit_labels <<
             "name" << "type" << "length" << "other" << "pointer";
 
-    source_model = new QStandardItemModel( 0, 5 );
-    source_model->setHorizontalHeaderLabels( header_labels );
-    source_list->setModel( source_model );
+    displayed_source_model = new QStandardItemModel( 0, 5 );
+    displayed_source_model->setHorizontalHeaderLabels( header_labels );
+    source_list->setModel( displayed_source_model );
     source_list->setMinimumSize( 600, 200 );
 
-    destination_model = new QStandardItemModel( 0, 5 );
-    destination_model->setHorizontalHeaderLabels( header_labels );
-    destination_list->setModel( destination_model );
+    displayed_destination_model = new QStandardItemModel( 0, 5 );
+    displayed_destination_model->setHorizontalHeaderLabels( header_labels );
+    destination_list->setModel( displayed_destination_model );
     destination_list->setMinimumSize( 600, 200 );
 
-    source_signal_list->setModel( source_model );
-    destination_signal_list->setModel( destination_model );
+    source_signal_list->setModel( displayed_source_model );
+    destination_signal_list->setModel( displayed_destination_model );
 
     this->source_list->setColumnHidden( 4, true );
     this->destination_list->setColumnHidden( 4, true );
@@ -67,6 +67,31 @@ Form::Form( QWidget *parent ) :
     this->selected_source_circle = NULL;
     this->selected_destination_circle = NULL;
 
+    this->signal_selected_flag = 0;
+
+    connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
+             this, SLOT(beginToDrawMapping(QModelIndex)) );
+    connect( this->destination_signal_list, SIGNAL(clicked(QModelIndex)),
+             this, SLOT(beginToDrawMapping(QModelIndex)) );
+
+    connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
+             this, SLOT(finishDrawingMapping(QModelIndex)) );
+    connect( this->destination_signal_list, SIGNAL(clicked(QModelIndex)),
+             this, SLOT(finishDrawingMapping(QModelIndex)) );
+
+    connect( this->destination_signal_list, SIGNAL(collapsed(QModelIndex)),
+             this, SLOT(updateMappingView()) );
+    connect( this->source_signal_list, SIGNAL(collapsed(QModelIndex)),
+             this, SLOT(updateMappingView()) );
+    connect( this->source_signal_list, SIGNAL(expanded(QModelIndex)),
+             this, SLOT(updateMappingView()) );
+    connect( this->destination_signal_list, SIGNAL(expanded(QModelIndex)),
+             this, SLOT(updateMappingView()) );
+
+    connect( this->deleteButton, SIGNAL(toggled(bool)),
+             this, SLOT(updateDeleteButtonState(bool)) );
+
+    /*
     connect( this->vis_mode_toggle, SIGNAL(currentIndexChanged(int)),
              this, SLOT(changeVisualizationMode(int)) );
 
@@ -78,36 +103,14 @@ Form::Form( QWidget *parent ) :
 
     connect( graphics_view, SIGNAL(mouseStateChanged(bool)),
             this, SLOT(updateMouseState(bool)) );
+    */
 
-
-    connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
-             this, SLOT(beginToDrawMapping(QModelIndex)) );
-    connect( this->destination_signal_list, SIGNAL(clicked(QModelIndex)),
-             this, SLOT(beginToDrawMapping(QModelIndex)) );
-
-    connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
-             this, SLOT(finishDrawingMapping(QModelIndex)) );
-    connect( this->destination_signal_list, SIGNAL(clicked(QModelIndex)),
-             this, SLOT(finishDrawingMapping(QModelIndex)) );
-
-    this->signal_selected_flag = 0;
-
-    connect( this->destination_signal_list, SIGNAL(collapsed(QModelIndex)),
-             this, SLOT(updateMappingView()) );
-    connect( this->source_signal_list, SIGNAL(collapsed(QModelIndex)),
-             this, SLOT(updateMappingView()) );
-    connect( this->source_signal_list, SIGNAL(expanded(QModelIndex)),
-             this, SLOT(updateMappingView()) );
-    connect( this->destination_signal_list, SIGNAL(expanded(QModelIndex)),
-             this, SLOT(updateMappingView()) );
-
+    /*
     connect( this->clear_sources_button, SIGNAL(clicked()),
              this, SLOT(clearSources()));
     connect( this->clear_dests_button, SIGNAL(clicked()),
              this, SLOT(clearDests()));
-
-    connect( this->deleteButton, SIGNAL(toggled(bool)),
-             this, SLOT(updateDeleteButtonState(bool)) );
+    */
 
     QString picker_str[7];
     picker_str[0] = "# of signals";
@@ -145,8 +148,8 @@ Form::Form( QWidget *parent ) :
 
 void Form::clearSources() {
 
-    for ( std::list<Node*>::iterator it = this->node_pointer_list.begin();
-            it != this->node_pointer_list.end();
+    for ( std::list<Node*>::iterator it = this->master_source_node_pointer_list.begin();
+            it != this->master_source_node_pointer_list.end();
             it++ ) {
 
         if ( (*it)->is_source ) {
@@ -162,8 +165,8 @@ void Form::clearSources() {
 
 void Form::clearDests() {
 
-    for ( std::list<Node*>::iterator it = this->node_pointer_list.begin();
-            it != this->node_pointer_list.end();
+    for ( std::list<Node*>::iterator it = this->master_source_node_pointer_list.begin();
+            it != this->master_source_node_pointer_list.end();
             it++ ) {
 
         if ( (*it)->is_destination ) {
@@ -225,7 +228,7 @@ void Form::beginToDrawMapping( const QModelIndex& index ) {
     }
 
 
-    if ( (QStandardItemModel*)index.model() == this->source_model &&
+    if ( (QStandardItemModel*)index.model() == this->displayed_source_model &&
          (this->signal_selected_flag == 1 || this->signal_selected_flag == 0) ) {
 
         printf("begin source side!\n");
@@ -267,7 +270,7 @@ void Form::beginToDrawMapping( const QModelIndex& index ) {
 
         }
 
-    } else if ( (QStandardItemModel*)index.model() == this->destination_model &&
+    } else if ( (QStandardItemModel*)index.model() == this->displayed_destination_model &&
                 (this->signal_selected_flag == -1 || this->signal_selected_flag == 0) ) {
 
         printf("begin destination side!\n");
@@ -329,7 +332,7 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
 
     }
 
-    if ( (QStandardItemModel*)index.model() == this->source_model &&
+    if ( (QStandardItemModel*)index.model() == this->displayed_source_model &&
          this->signal_selected_flag == -1 ) {
 
         printf("finish source side!\n");
@@ -366,12 +369,12 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
                                      pen_color,
                                      brush_color );
 
-            source_str.append( this->source_model->itemFromIndex( index.parent() )->text() );
-            source_str.append( this->source_model->
+            source_str.append( this->displayed_source_model->itemFromIndex( index.parent() )->text() );
+            source_str.append( this->displayed_source_model->
                               itemFromIndex( index.parent().child(index.row(),0) )->text() );
 
-            dest_str.append( this->destination_model->itemFromIndex( selected_signal.parent() )->text() );
-            dest_str.append( this->destination_model->
+            dest_str.append( this->displayed_destination_model->itemFromIndex( selected_signal.parent() )->text() );
+            dest_str.append( this->displayed_destination_model->
                                itemFromIndex( selected_signal.parent().child(selected_signal.row(),0) )->
                                text() );
 
@@ -386,7 +389,7 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
 
         }
 
-    } else if ( (QStandardItemModel*)index.model() == this->destination_model &&
+    } else if ( (QStandardItemModel*)index.model() == this->displayed_destination_model &&
                 this->signal_selected_flag == 1 ) {
 
         printf("finish destination side!\n");
@@ -424,12 +427,12 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
                      pen_color,
                      brush_color );
 
-            dest_str.append( this->destination_model->itemFromIndex( index.parent() )->text() );
-            dest_str.append( this->destination_model->
+            dest_str.append( this->displayed_destination_model->itemFromIndex( index.parent() )->text() );
+            dest_str.append( this->displayed_destination_model->
                               itemFromIndex( index.parent().child(index.row(),0) )->text() );
 
-            source_str.append( this->source_model->itemFromIndex( selected_signal.parent() )->text() );
-            source_str.append( this->source_model->
+            source_str.append( this->displayed_source_model->itemFromIndex( selected_signal.parent() )->text() );
+            source_str.append( this->displayed_source_model->
                                itemFromIndex( selected_signal.parent().child(selected_signal.row(),0) )->
                                text() );
 
@@ -479,8 +482,8 @@ void Form::updateMouseState( bool is_pressed ) {
 
     if ( !mouse_is_pressed ) {
 
-        for ( std::list<Node*>::iterator it = node_pointer_list.begin();
-                it != node_pointer_list.end();
+        for ( std::list<Node*>::iterator it = master_source_node_pointer_list.begin();
+                it != master_source_node_pointer_list.end();
                 it++ ) {
 
             if ( (*it)->conflict_flag == -1 ) {
@@ -507,8 +510,8 @@ void Form::updateMouseState( bool is_pressed ) {
 
 void Form::newDoubleClick( ) {
 
-    for ( std::list<Node*>::iterator it = node_pointer_list.begin();
-            it != node_pointer_list.end();
+    for ( std::list<Node*>::iterator it = master_source_node_pointer_list.begin();
+            it != master_source_node_pointer_list.end();
             it++ ) {
 
         if ( selection_mode_toggle->currentIndex() == 1 &&
@@ -571,12 +574,12 @@ void Form::updateMappingView( ) {
     clearMappingView( );
 
     for ( int i = 0;
-            i < source_model->rowCount( );
+            i < displayed_source_model->rowCount( );
             i++ ) {
 
-        source_item_pointer = source_model->item( i, 4 );
+        source_item_pointer = displayed_source_model->item( i, 4 );
         source_pointer = (Node*)(source_item_pointer->text().toInt());
-        source_item_pointer = source_model->item( i, 0 );
+        source_item_pointer = displayed_source_model->item( i, 0 );
 
         for ( std::list<qt_mapping>::iterator it =
                 source_pointer->destination_list.begin();
@@ -584,14 +587,14 @@ void Form::updateMappingView( ) {
               it++ ) {
 
             for ( int j = 0;
-                    j < destination_model->rowCount( );
+                    j < displayed_destination_model->rowCount( );
                     j++ ) {
 
-                destination_item_pointer = destination_model->item( j, 4 );
+                destination_item_pointer = displayed_destination_model->item( j, 4 );
                 destination_pointer =
                         (Node*)(destination_item_pointer->text().toInt());
                 destination_item_pointer =
-                        destination_model->item( j, 0 );
+                        displayed_destination_model->item( j, 0 );
 
                 if ( !strcmp((*it)->destination_node->name,
                      destination_pointer->name)
@@ -637,10 +640,10 @@ void Form::updateMappingView( ) {
                          destination_signal_item_pointer != 0 ) {
 
                         source_signal_index =
-                                source_model->
+                                displayed_source_model->
                                 indexFromItem( source_signal_item_pointer );
                         dest_signal_index =
-                                destination_model->
+                                displayed_destination_model->
                                 indexFromItem( destination_signal_item_pointer );
 
                         source_signal_rect =
@@ -777,10 +780,10 @@ void Form::updateMappingView( ) {
 void Form::addNodeToDestinationView( Node* the_node ) {
 
     QModelIndex dummy_index;
-    destination_model->
+    displayed_destination_model->
         appendRow( the_node->destination_model_list );
     destination_signal_list->
-        setFirstColumnSpanned( destination_model->rowCount()-1,
+        setFirstColumnSpanned( displayed_destination_model->rowCount()-1,
                                dummy_index, true );
     the_node->is_destination = true;
     the_node->is_source = false;
@@ -797,10 +800,10 @@ void Form::addNodeToDestinationView( Node* the_node ) {
 
 void Form::removeNodeFromDestinationView( Node* the_node ) {
 
-    int i = destination_model->
+    int i = displayed_destination_model->
             indexFromItem( the_node->
                            destination_model_list.first() ).row();
-    destination_model->takeRow( i );
+    displayed_destination_model->takeRow( i );
     the_node->is_destination = false;
     the_node->update();
 
@@ -809,10 +812,10 @@ void Form::removeNodeFromDestinationView( Node* the_node ) {
 void Form::addNodeToSourceView( Node* the_node ) {
 
     QModelIndex dummy_index;
-    source_model->
+    displayed_source_model->
         appendRow( the_node->source_model_list );
     source_signal_list->
-        setFirstColumnSpanned( source_model->rowCount()-1,
+        setFirstColumnSpanned( displayed_source_model->rowCount()-1,
                                dummy_index, true );
     the_node->is_source = true;
     the_node->is_destination = false;
@@ -830,10 +833,10 @@ void Form::addNodeToSourceView( Node* the_node ) {
 
 void Form::removeNodeFromSourceView( Node* the_node ) {
 
-    int i = source_model->
+    int i = displayed_source_model->
             indexFromItem( the_node->
                            source_model_list.first() ).row();
-    source_model->takeRow( i );
+    displayed_source_model->takeRow( i );
     the_node->is_source = false;
     the_node->update();
 
@@ -1077,13 +1080,13 @@ void Form::removeMapping( mapper_db_mapping record ) {
 
     Utility::device_search_term =
             parsed_str[0].toLatin1().constData();
-    source_it = std::find_if( this->node_pointer_list.begin(),
-                        this->node_pointer_list.end(),
+    source_it = std::find_if( this->master_source_node_pointer_list.begin(),
+                        this->master_source_node_pointer_list.end(),
                         Utility::isNameMatch );
     Utility::device_search_term =
             parsed_str_2[0].toLatin1().constData();
-    destination_it = std::find_if( this->node_pointer_list.begin(),
-                        this->node_pointer_list.end(),
+    destination_it = std::find_if( this->master_source_node_pointer_list.begin(),
+                        this->master_source_node_pointer_list.end(),
                         Utility::isNameMatch );
 
     (*source_it)->removeMapping( (*destination_it),
@@ -1137,13 +1140,13 @@ void Form::addNewMapping( mapper_db_mapping record ) {
 
     Utility::device_search_term =
             parsed_str[0].toLatin1().constData();
-    source_it = std::find_if( this->node_pointer_list.begin(),
-                        this->node_pointer_list.end(),
+    source_it = std::find_if( this->master_source_node_pointer_list.begin(),
+                        this->master_source_node_pointer_list.end(),
                         Utility::isNameMatch );
     Utility::device_search_term =
             parsed_str_2[0].toLatin1().constData();
-    destination_it = std::find_if( this->node_pointer_list.begin(),
-                        this->node_pointer_list.end(),
+    destination_it = std::find_if( this->master_source_node_pointer_list.begin(),
+                        this->master_source_node_pointer_list.end(),
                         Utility::isNameMatch );
 
     (*source_it)->addMapping( (*destination_it),
@@ -1170,8 +1173,8 @@ void Form::addNewSignal( mapper_db_signal record ) {
             */
     Utility::device_search_term = record->device_name;
 
-    it = std::find_if( this->node_pointer_list.begin(),
-                        this->node_pointer_list.end(),
+    it = std::find_if( this->master_source_node_pointer_list.begin(),
+                        this->master_source_node_pointer_list.end(),
                         Utility::isNameMatch );
     /*
     printf( "vijay found %s with %d rows\n",
@@ -1240,6 +1243,18 @@ void Form::addNewSignal( mapper_db_signal record ) {
 
     }
 
+    /*
+    if (record->is_output && (*it)->is_source == false) {
+
+        this->addNodeToSourceView( (*it) );
+
+    } else if ( (*it)->is_destination == false ){
+
+        this->addNodeToDestinationView( (*it) );
+
+    }
+    */
+
     this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
 
 }
@@ -1249,8 +1264,8 @@ void Form::removeDevice( const char* name ) {
     std::list<Node*>::iterator it;
     Utility::device_search_term = name;
 
-    it = std::find_if( this->node_pointer_list.begin(),
-                      this->node_pointer_list.end(),
+    it = std::find_if( this->master_source_node_pointer_list.begin(),
+                      this->master_source_node_pointer_list.end(),
                       Utility::isNameMatch );
     scene->removeItem(*it);
 
@@ -1265,7 +1280,7 @@ void Form::removeDevice( const char* name ) {
         (*it)->conflict_flag = 0;
 
     }
-    this->node_pointer_list.remove_if( Utility::isNameMatch );
+    this->master_source_node_pointer_list.remove_if( Utility::isNameMatch );
 
     this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
 
@@ -1280,14 +1295,9 @@ void Form::addNewDevice( const char* name,
     std::stringstream out;
     Node* new_device = new Node(graphics_view);
 
-    new_device->sides = 3;
-
-    //printf( "addNewDevice(  ) \n" );
-
-    this->node_pointer_list.push_back( new_device );
-    this->node_pointer_list.back()->setName( name );
-    scene->addItem(this->node_pointer_list.back());
-    //this->node_pointer_list.back()->setPos( default_x, default_y );
+    this->master_source_node_pointer_list.push_back( new_device );
+    this->master_source_node_pointer_list.back()->setName( name );
+    scene->addItem(this->master_source_node_pointer_list.back());
 
     QStandardItem* source_item_1 = new QStandardItem;
     QStandardItem* source_item_2 = new QStandardItem;
@@ -1304,13 +1314,12 @@ void Form::addNewDevice( const char* name,
     out.str( "" );
     out << (int)new_device;
     source_pointer_item->setText( out.str().c_str() );
-    this->node_pointer_list.back()->source_model_list
+    this->master_source_node_pointer_list.back()->source_model_list
             << source_item_1
             << source_item_2
             << source_item_3
             << source_item_4
             << source_pointer_item;
-    //printf( "pointer int %d\n", (int)new_device );
 
     QStandardItem* destination_item_1 = new QStandardItem;
     QStandardItem* destination_item_2 = new QStandardItem;
@@ -1328,17 +1337,14 @@ void Form::addNewDevice( const char* name,
     out.str( "" );
     out << (int)new_device;
     destination_pointer_item->setText( out.str().c_str() );
-    this->node_pointer_list.back()->destination_model_list
+    this->master_source_node_pointer_list.back()->destination_model_list
             << destination_item_1
             << destination_item_2
             << destination_item_3
             << destination_item_4
             << destination_pointer_item;
 
-    //printf( "appended row to model with %d %d columns\n",
-    //        this->node_pointer_list.back()->model_list.size(),
-    //        source_model->columnCount() );
-
+    /*
     QObject::connect( this->node_pointer_list.back(),
                          SIGNAL(selectionStateChanged(bool)),
                          this,
@@ -1352,6 +1358,10 @@ void Form::addNewDevice( const char* name,
                       SIGNAL(nodeReleased(Node*)),
                       this,
                       SLOT(updateReleasedNode(Node*)));
+                      */
+
+    this->addNodeToSourceView( new_device );
+    this->addNodeToDestinationView( new_device );
 
     this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
 
@@ -1379,8 +1389,8 @@ void Form::updateVisualizationNodes( int current_mode ) {
         std::list<Node*> cluster_3;
 
         for ( std::list<Node*>::iterator it =
-                this->node_pointer_list.begin();
-              it != this->node_pointer_list.end();
+                this->master_source_node_pointer_list.begin();
+              it != this->master_source_node_pointer_list.end();
               it++ ) {
 
             printf( "name: %s, source rows: %d, dest rows: %d\n",
@@ -1427,7 +1437,7 @@ void Form::updateVisualizationNodes( int current_mode ) {
 
             (*it)->setPos( cluster_1_x,
                            cluster_1_y );
-            cluster_1_y += (*it)->diameter + 38;
+            cluster_1_y += (*it)->diameter + 160;
 
         } for ( std::list<Node*>::iterator it =
                 cluster_2.begin();
@@ -1436,7 +1446,7 @@ void Form::updateVisualizationNodes( int current_mode ) {
 
             (*it)->setPos( cluster_2_x,
                            cluster_2_y );
-            cluster_2_y += (*it)->diameter + 38;
+            cluster_2_y += (*it)->diameter + 160;
 
         } for ( std::list<Node*>::iterator it =
                 cluster_3.begin();
@@ -1445,7 +1455,7 @@ void Form::updateVisualizationNodes( int current_mode ) {
 
             (*it)->setPos( cluster_3_x,
                            cluster_3_y );
-            cluster_3_y += (*it)->diameter + 38;
+            cluster_3_y += (*it)->diameter + 160;
 
         }
 
@@ -1454,8 +1464,8 @@ void Form::updateVisualizationNodes( int current_mode ) {
     else if ( current_mode == 1 ) {
 
         for ( std::list<Node*>::iterator it =
-                this->node_pointer_list.begin();
-              it != this->node_pointer_list.end();
+                this->master_source_node_pointer_list.begin();
+              it != this->master_source_node_pointer_list.end();
               it++ ) {
 
             for ( std::list<qt_mapping>::iterator itt =
@@ -1489,8 +1499,8 @@ void Form::updateVisualizationLinks( int current_mode ) {
     if ( current_mode == 0 ) {
 
         for ( std::list<Node*>::iterator it =
-                this->node_pointer_list.begin();
-                it != this->node_pointer_list.end();
+                this->master_source_node_pointer_list.begin();
+                it != this->master_source_node_pointer_list.end();
                 it++ ) {
 
 
