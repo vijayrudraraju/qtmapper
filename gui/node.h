@@ -59,6 +59,7 @@ public:
     int conflict_flag; //-1 => source, 0 => no confict, 1 => destination
 
     const char* name;
+
     int inputs;
     int outputs;
     int diameter;

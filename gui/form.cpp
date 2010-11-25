@@ -473,6 +473,8 @@ void Form::update(  ) {
     this->source_signal_list->resizeColumnToContents( 2 );
     this->source_signal_list->resizeColumnToContents( 3 );
 
+    this->updateMappingView();
+
 }
 
 void Form::updateMouseState( bool is_pressed ) {
@@ -543,6 +545,8 @@ void Form::clearMappingView( ) {
 
 }
 
+// most complicated function tasked with drawing lines between signals that
+// are mapped to each other
 void Form::updateMappingView( ) {
 
     Link* new_link_pointer;
@@ -550,12 +554,16 @@ void Form::updateMappingView( ) {
 
     QStandardItem* source_item_pointer;
     QStandardItem* destination_item_pointer;
-    QStandardItem* source_signal_item_pointer;
-    QStandardItem* destination_signal_item_pointer;
+
+    QStandardItem* source_signal_item_pointer = 0;
+    QStandardItem* destination_signal_item_pointer = 0;
+
     Node* source_pointer;
     Node* destination_pointer;
+
     QModelIndex source_signal_index;
     QModelIndex dest_signal_index;
+
     QRect source_signal_rect;
     QRect destination_signal_rect;
 
@@ -604,6 +612,11 @@ void Form::updateMappingView( ) {
                           k < source_item_pointer->rowCount();
                           k++ ) {
 
+                        printf( "source child %d: %s signal name: %s\n",
+                                k, source_item_pointer->child( k, 0 )->
+                                text().toLatin1().constData(),
+                                (*it)->source_signal_name );
+
                         if ( !strcmp(source_item_pointer->child( k, 0 )->
                              text().toLatin1().constData(),
                              (*it)->source_signal_name) ) {
@@ -621,6 +634,11 @@ void Form::updateMappingView( ) {
                     for ( int k = 0;
                           k < destination_item_pointer->rowCount();
                           k++ ) {
+
+                        printf( "dest child %d: %s signal name: %s\n",
+                                k, destination_item_pointer->child( k, 0 )->
+                                text().toLatin1().constData(),
+                                (*it)->destination_signal_name );
 
                         if ( !strcmp(destination_item_pointer->child( k, 0 )->
                              text().toLatin1().constData(),
@@ -685,38 +703,13 @@ void Form::updateMappingView( ) {
 
 
                         new_link_pointer = new Link( this->graphics_view_2, &mapping_scene );
-                        if ( source_vertical_offset +
-                             source_signal_rect.topLeft().y() <=
-                             dest_vertical_offset +
-                             destination_signal_rect.topLeft().y() ) {
 
-                            new_link_pointer->is_inverted = false;
-                            new_link_pointer->setPos( 0,
-                                        source_vertical_offset +
-                                        source_signal_rect.topLeft().y() );
-                            new_link_pointer->line_width =
-                                    graphics_view_2->width();
-                            new_link_pointer->line_height =
-                                    (dest_vertical_offset +
-                                    destination_signal_rect.topLeft().y()) -
-                                    (source_vertical_offset +
-                                    source_signal_rect.topLeft().y());
-
-                        } else {
-
-                            new_link_pointer->is_inverted = true;
-                            new_link_pointer->setPos( 0,
-                                        dest_vertical_offset +
-                                        destination_signal_rect.topLeft().y() );
-                            new_link_pointer->line_width =
-                                    graphics_view_2->width();
-                            new_link_pointer->line_height =
-                                    (source_vertical_offset +
-                                    source_signal_rect.topLeft().y()) -
-                                    (dest_vertical_offset +
-                                    destination_signal_rect.topLeft().y());
-
-                        }
+                        new_link_pointer->setLine( 0,
+                                                   source_vertical_offset +
+                                                   source_signal_rect.topLeft().y(),
+                                                   graphics_view_2->width(),
+                                                   dest_vertical_offset +
+                                                   destination_signal_rect.topLeft().y() );
 
                         temp_str = "";
                         temp_str.append( source_signal_item_pointer->parent()->text() );
@@ -794,7 +787,7 @@ void Form::addNodeToDestinationView( Node* the_node ) {
             indexFromItem( the_node->destination_model_list.first() )
             );
 */
-    //updateMappingView();
+    updateMappingView();
 
 }
 
@@ -821,13 +814,7 @@ void Form::addNodeToSourceView( Node* the_node ) {
     the_node->is_destination = false;
     the_node->update();
 
-    /*
-    source_signal_list->expand(
-            source_model->
-            indexFromItem( the_node->source_model_list.first() )
-            );
-*/
-    //updateMappingView();
+    updateMappingView();
 
 }
 
@@ -942,11 +929,7 @@ bool Form::eventFilter( QObject *obj, QEvent *event ) {
         return true;
 
     } else if ( event->type() == QEvent::Show) {
-/*
-        mapping_scene->setSceneRect( 0, 0,
-                                     graphics_view_2->width(),
-                                     graphics_view_2->height() );
-                                     */
+
         return true;
 
     } else {
@@ -1243,18 +1226,6 @@ void Form::addNewSignal( mapper_db_signal record ) {
 
     }
 
-    /*
-    if (record->is_output && (*it)->is_source == false) {
-
-        this->addNodeToSourceView( (*it) );
-
-    } else if ( (*it)->is_destination == false ){
-
-        this->addNodeToDestinationView( (*it) );
-
-    }
-    */
-
     this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
 
 }
@@ -1401,7 +1372,6 @@ void Form::updateVisualizationNodes( int current_mode ) {
             if ( (*it)->source_model_list[0]->rowCount() == 0 &&
                  (*it)->destination_model_list[0]->rowCount() == 0 ) {
 
-                //(*it)->sides = 3;
                 cluster_3.push_back((*it));
                 continue;
 
@@ -1410,12 +1380,10 @@ void Form::updateVisualizationNodes( int current_mode ) {
             if ( (*it)->source_model_list[0]->rowCount() >=
                  (*it)->destination_model_list[0]->rowCount() ) {
 
-                //(*it)->sides = 2;
                 cluster_1.push_back((*it));
 
             } else {
 
-                //(*it)->sides = 0;
                 cluster_2.push_back((*it));
 
             }

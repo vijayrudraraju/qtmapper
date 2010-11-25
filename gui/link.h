@@ -5,26 +5,21 @@
 #include <QGraphicsView>
 #include <QGraphicsItem>
 
-class Link : public QObject, public QGraphicsItem {
+class Link : public QObject, public QGraphicsLineItem {
 
     Q_OBJECT
     Q_INTERFACES( QGraphicsItem )
 
 public:
-    Link( QGraphicsView* viewWidget, QGraphicsScene* new_scene  );
+    Link( QGraphicsView* viewWidget, QGraphicsScene* new_scene );
     ~Link(  );
-
-    QRectF boundingRect() const;
-    void paint(QPainter* painter,
-               const QStyleOptionGraphicsItem* option,
-               QWidget* widget);
 
     char source_signal_name[1024];
     char dest_signal_name[1024];
-    int line_width;
-    int line_height;
-    bool is_inverted;
+    const char* expr;
+
     bool is_deletable;
+    bool is_selected;
     const static int pen_width = 2;
 
 signals:
@@ -33,13 +28,13 @@ signals:
 private:
     QGraphicsView* view;
     QGraphicsScene* scene;
-    bool hover_flag;
 
 protected:
+
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     void mousePressEvent(QGraphicsSceneMouseEvent* event);
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
-
 
 };
 
