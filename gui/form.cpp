@@ -453,7 +453,15 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
 void Form::sendNewMappingRequest( const char* source_signal_path,
                                   const char* dest_signal_path ) {
 
-    mapper_db_create_mapping( source_signal_path, dest_signal_path );
+    std::string src_dev = std::string(source_signal_path)
+        .substr(0,std::string(source_signal_path).find('/', 1));
+
+    std::string dest_dev = std::string(dest_signal_path)
+        .substr(0,std::string(dest_signal_path).find('/', 1));
+
+    mapper_monitor_link( mon, src_dev.c_str(), dest_dev.c_str() );
+    mapper_monitor_connect( mon, source_signal_path,
+                            dest_signal_path, 0, 0 );
 
 }
 
@@ -834,7 +842,8 @@ void Form::updatePressedLink( Link *reference ) {
     printf("updatePressedLink source %s dest %s\n",
            reference->source_signal_name,
            reference->dest_signal_name );
-    mapper_db_destroy_mapping( reference->source_signal_name,
+    mapper_monitor_disconnect( mon,
+                               reference->source_signal_name,
                                reference->dest_signal_name );
 
 }
