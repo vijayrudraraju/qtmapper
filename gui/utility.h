@@ -11,8 +11,8 @@ public:
     static const char* mapping_source_signal_term;
     static const char* mapping_dest_signal_term;
 
-    static mapper_db_device device_search_struct;
     static const char* device_search_struct_name;
+    static mapper_db_device device_search_struct;
     static mapper_db_signal signal_search_struct;
     static mapper_db_mapping mapping_search_struct;
 
@@ -31,7 +31,10 @@ public:
 
     static bool findDbDevice( mapper_db_device i );
     static bool findDbDeviceByName( mapper_db_device i );
+
     static bool findDbSignal( mapper_db_signal i );
+    bool findDbSignalPair( std::pair<mapper_db_device, mapper_db_signal> i );
+
     static bool findDbMapping( mapper_db_mapping i );
 
 };

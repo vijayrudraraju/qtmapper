@@ -734,12 +734,14 @@ void Form::updateMappingView( ) {
                     dest_signal_list->header()->height() +
                     ( dest_signal_rect.height() / 2 ) + Link::pen_width;
 
+            /*
             printf( "source signal y %d + offset %d\n",
                     source_signal_rect.topLeft().y(),
                     source_vertical_offset );
             printf( "destination signal y %d + offset %d\n",
                     dest_signal_rect.topLeft().y(),
                     dest_vertical_offset );
+                    */
 
 
             new_link_pointer = new Link( this->graphics_view_2, &mapping_scene );
@@ -755,10 +757,6 @@ void Form::updateMappingView( ) {
                     new_link_pointer->mapping->src_name );
             strcpy( new_link_pointer->dest_signal_name,
                     new_link_pointer->mapping->dest_name );
-
-            printf( "vijaydebug %s %s\n",
-                    new_link_pointer->source_signal_name,
-                    new_link_pointer->dest_signal_name );
 
             this->displayed_mapping_list.push_back( new_link_pointer );
             QObject::connect( this->displayed_mapping_list.back(),
@@ -784,379 +782,15 @@ void Form::updateMappingView( ) {
 
 }
 
-/*
-void Form::updateMappingView( ) {
-
-    Link* new_link_pointer;
-    QString temp_str = "";
-
-    QStandardItem* source_item_pointer;
-    QStandardItem* dest_item_pointer;
-
-    QStandardItem* source_signal_item_pointer = 0;
-    QStandardItem* dest_signal_item_pointer = 0;
-
-    //Node* source_pointer;
-    //Node* dest_pointer;
-
-    QModelIndex source_signal_index;
-    QModelIndex dest_signal_index;
-
-    QRect source_signal_rect;
-    QRect dest_signal_rect;
-
-    QPen pen_width;
-    pen_width.setWidth( 1 );
-
-    int source_vertical_offset;
-    int dest_vertical_offset;
-
-    this->graphics_view_2->
-            viewport()->setFixedSize( graphics_view_2->width(),
-                                      graphics_view_2->height() );
-    this->graphics_view_2->setSceneRect( 0, 0,
-                                      graphics_view_2->width(),
-                                      graphics_view_2->height() );
-    clearMappingView( );
-
-    for ( int i = 0; i < displayed_source_model->rowCount( ); i++ ) {
-
-        //source_item_pointer = displayed_source_model->item( i, 5 );
-        //source_pointer = (Node*)(source_item_pointer->text().toInt());
-        source_item_pointer = displayed_source_model->item( i, 0 );
-
-        for ( std::list<qt_mapping>::iterator it =
-                source_pointer->destination_list.begin();
-              it != source_pointer->destination_list.end();
-              it++ ) {
-
-            for ( int j = 0;
-                    j < displayed_dest_model->rowCount( );
-                    j++ ) {
-
-                //dest_item_pointer = displayed_dest_model->item( j, 5 );
-                //dest_pointer = (Node*)(dest_item_pointer->text().toInt());
-                dest_item_pointer = displayed_dest_model->item( j, 0 );
-
-                if ( !strcmp((*it)->destination_node->name,
-                     dest_pointer->name)
-                     ) {
-
-                    for ( int k = 0;
-                          k < source_item_pointer->rowCount();
-                          k++ ) {
-
-                        printf( "source child %d: %s signal name: %s\n",
-                                k, source_item_pointer->child( k, 0 )->
-                                text().toLatin1().constData(),
-                                (*it)->src_name );
-
-                        if ( !strcmp(source_item_pointer->child( k, 0 )->
-                             text().toLatin1().constData(),
-                             (*it)->src_name) ) {
-
-                            source_signal_item_pointer =
-                                    source_item_pointer->child( k, 0 );
-                            break;
-
-                        }
-
-                        source_signal_item_pointer = 0;
-
-                    }
-
-                    for ( int k = 0;
-                          k < dest_item_pointer->rowCount();
-                          k++ ) {
-
-                        printf( "dest child %d: %s signal name: %s\n",
-                                k, dest_item_pointer->child( k, 0 )->
-                                text().toLatin1().constData(),
-                                (*it)->dest_name );
-
-                        if ( !strcmp(dest_item_pointer->child( k, 0 )->
-                             text().toLatin1().constData(),
-                             (*it)->dest_name) ) {
-
-                            dest_signal_item_pointer =
-                                    dest_item_pointer->child( k, 0 );
-                            break;
-
-                        }
-
-                        dest_signal_item_pointer = 0;
-
-                    }
-
-                    if ( source_signal_item_pointer != 0 &&
-                         dest_signal_item_pointer != 0 ) {
-
-                        source_signal_index =
-                                displayed_source_model->
-                                indexFromItem( source_signal_item_pointer );
-                        dest_signal_index =
-                                displayed_dest_model->
-                                indexFromItem( dest_signal_item_pointer );
-
-                        source_signal_rect =
-                                source_signal_list->
-                                visualRect( source_signal_index  );
-                        dest_signal_rect =
-                                dest_signal_list->
-                                visualRect( dest_signal_index  );
-
-                        if ( source_signal_rect.topLeft().y() == 0 ) {
-
-                            source_signal_rect =
-                                    source_signal_list->
-                                    visualRect( source_signal_index.parent() );
-
-                        }
-
-                        if ( dest_signal_rect.topLeft().y() == 0 ) {
-
-                            dest_signal_rect =
-                                    dest_signal_list->
-                                    visualRect( dest_signal_index.parent() );
-
-                        }
-
-                        source_vertical_offset =
-                                source_signal_list->header()->height() +
-                                ( source_signal_rect.height() / 2 ) + Link::pen_width;
-                        dest_vertical_offset =
-                                dest_signal_list->header()->height() +
-                                ( dest_signal_rect.height() / 2 ) + Link::pen_width;
-
-                        printf( "source signal y %d + offset %d\n",
-                                source_signal_rect.topLeft().y(),
-                                source_vertical_offset );
-                        printf( "destination signal y %d + offset %d\n",
-                                dest_signal_rect.topLeft().y(),
-                                dest_vertical_offset );
-
-
-                        new_link_pointer = new Link( this->graphics_view_2, &mapping_scene );
-                        new_link_pointer->mapping = (*it);
-                        new_link_pointer->setLine( 0,
-                                                   source_vertical_offset +
-                                                   source_signal_rect.topLeft().y(),
-                                                   graphics_view_2->width(),
-                                                   dest_vertical_offset +
-                                                   dest_signal_rect.topLeft().y() );
-
-                        temp_str = "";
-                        temp_str.append( source_signal_item_pointer->parent()->text() );
-                        temp_str.append( source_signal_item_pointer->text() );
-                        strcpy( new_link_pointer->source_signal_name,
-                                temp_str.toLatin1().constData() );
-
-                        temp_str = "";
-                        temp_str.append( dest_signal_item_pointer->parent()->text() );
-                        temp_str.append( dest_signal_item_pointer->text() );
-                        strcpy( new_link_pointer->dest_signal_name,
-                                temp_str.toLatin1().constData() );
-
-
-                        printf( "vijaydebug %s %s\n",
-                                new_link_pointer->source_signal_name,
-                                new_link_pointer->dest_signal_name );
-
-                        this->displayed_mapping_list.push_back( new_link_pointer );
-                        QObject::connect( this->displayed_mapping_list.back(),
-                                          SIGNAL(linkPressed(Link*)),
-                                          this,
-                                          SLOT(updatePressedLink(Link*)));
-                        QObject::connect( this->displayed_mapping_list.back(),
-                                          SIGNAL(linkSelected(Link*)),
-                                          this,
-                                          SLOT(updateSelectedLink(Link*)));
-                        QObject::connect( this->displayed_mapping_list.back(),
-                                          SIGNAL(linkUnselected(Link*)),
-                                          this,
-                                          SLOT(updateUnselectedLink(Link*)));
-                        mapping_scene.addItem(new_link_pointer);
-
-                        source_signal_item_pointer = 0;
-                        dest_signal_item_pointer = 0;
-
-                    }
-
-                }
-
-            }
-
-        }
-
-    }
-
-    this->updateIsDeletable( this->deleteButton->isChecked() );
-
-    printf( "updateMappingView: graphics_view_2->width %d\t, graphics_view_2->height %d\n",
-            graphics_view_2->width(),
-            graphics_view_2->height() );
-    printf( "updateMappingView: graphics_view_2->sceneRect->width %f\t, graphics_view_2->sceneRect->height %f\n",
-            graphics_view_2->sceneRect().width(),
-            graphics_view_2->sceneRect().height() );
-    printf( "updateMappingView: graphics_view_2->viewport->width %d\t, graphics_view_2->viewport->height %d\n",
-            graphics_view_2->viewport()->width(),
-            graphics_view_2->viewport()->height() );
-    printf( "updateMappingView: mapping_scene->maximumViewportSize->width %d\t, mapping_scene->maximumViewportSize->height %d\n",
-            graphics_view_2->maximumViewportSize().width(),
-            graphics_view_2->maximumViewportSize().height() );
-    printf( "updateMappingView: mapping_scene->sceneRect->width %f\t, mapping_scene->sceneRect->height %f\n\n",
-            mapping_scene.sceneRect().width(),
-            mapping_scene.sceneRect().height() );
-
-}
-*/
-
 
 void Form::removeMapping( mapper_db_mapping record ) {
 
     this->database->removeMappingData( record );
 
-    std::list<Node*>::iterator source_it;
-    std::list<Node*>::iterator destination_it;
-
-    QString str = record->src_name;
-    QStringList parsed_str = str.split( "/", QString::SkipEmptyParts );
-
-    QString str_2 = record->dest_name;
-    QStringList parsed_str_2 = str_2.split( "/", QString::SkipEmptyParts );
-
-    printf( "vijay searching for %s with %s to remove mapping from...\n",
-            parsed_str[0].toLatin1().constData(),
-            parsed_str[1].toLatin1().constData() );
-    printf( "%s with %s\n",
-            parsed_str_2[0].toLatin1().constData(),
-            parsed_str_2[1].toLatin1().constData() );
-
-    parsed_str[0].prepend("/");
-    parsed_str_2[0].prepend("/");
-    parsed_str[1].prepend("/");
-    parsed_str_2[1].prepend("/");
-
-    for ( QStringList::iterator it = parsed_str.begin() + 2;
-          it != parsed_str.end();
-          it++ ) {
-
-        it->prepend("/");
-        parsed_str[1].append( (*it) );
-
-    }
-
-    for ( QStringList::iterator it = parsed_str_2.begin() + 2;
-            it != parsed_str_2.end();
-            it++ ) {
-
-        it->prepend("/");
-        parsed_str_2[1].append( (*it) );
-
-    }
-
-    /*
-    Utility::device_search_term =
-            parsed_str[0].toLatin1().constData();
-    source_it = std::find_if( this->master_source_node_pointer_list.begin(),
-                        this->master_source_node_pointer_list.end(),
-                        Utility::isNameMatch );
-    Utility::device_search_term =
-            parsed_str_2[0].toLatin1().constData();
-    destination_it = std::find_if( this->master_source_node_pointer_list.begin(),
-                        this->master_source_node_pointer_list.end(),
-                        Utility::isNameMatch );
-
-    (*source_it)->removeMapping( (*destination_it),
-                              parsed_str[1].toLatin1().constData(),
-                              parsed_str_2[1].toLatin1().constData() );
-                              */
-
-    //this->updateMappingView();
-
 }
 void Form::addNewMapping( mapper_db_mapping record ) {
 
     this->database->addMappingData( record );
-
-    /*
-    std::list<Node*>::iterator source_it;
-    std::list<Node*>::iterator destination_it;
-
-    QString str = record->src_name;
-    QStringList parsed_str = str.split( "/", QString::SkipEmptyParts );
-
-    QString str_2 = record->dest_name;
-    QStringList parsed_str_2 = str_2.split( "/", QString::SkipEmptyParts );
-
-    printf( "vijay searching for %s with %s to add mapping to...\n",
-            parsed_str[0].toLatin1().constData(),
-            parsed_str[1].toLatin1().constData() );
-    printf( "%s with %s\n",
-            parsed_str_2[0].toLatin1().constData(),
-            parsed_str_2[1].toLatin1().constData() );
-
-    parsed_str[0].prepend("/");
-    parsed_str_2[0].prepend("/");
-    parsed_str[1].prepend("/");
-    parsed_str_2[1].prepend("/");
-
-    for ( QStringList::iterator it = parsed_str.begin() + 2;
-          it != parsed_str.end();
-          it++ ) {
-
-        it->prepend("/");
-        parsed_str[1].append( (*it) );
-
-    }
-
-    for ( QStringList::iterator it = parsed_str_2.begin() + 2;
-            it != parsed_str_2.end();
-            it++ ) {
-
-        it->prepend("/");
-        parsed_str_2[1].append( (*it) );
-
-    }
-
-    qt_mapping qt_map =
-            (qt_mapping) calloc( 1, sizeof(struct _qt_mapping) );
-
-    //qt_map->src_name = parsed_str[1].toLatin1().constData();
-    qt_map->src_name = strdup( parsed_str[1].toLatin1().constData() );
-    //qt_map->dest_name = parsed_str_2[1].toLatin1().constData();
-    qt_map->dest_name = strdup( parsed_str_2[1].toLatin1().constData() );
-
-    qt_map->src_type = record->src_type;
-    qt_map->dest_type = record->dest_type;
-    qt_map->clip_max = record->clip_max;
-    qt_map->clip_min = record->clip_min;
-    qt_map->range = record->range;
-
-    QString tmp = record->expression;
-    qt_map->expression = strdup( tmp.toLatin1().constData() );
-    //qt_map->expression = tmp.toLatin1().constData();
-
-    qt_map->mode = record->mode;
-    qt_map->muted = record->muted;
-
-    Utility::device_search_term =
-            parsed_str[0].toLatin1().constData();
-    source_it = std::find_if( this->master_source_node_pointer_list.begin(),
-                        this->master_source_node_pointer_list.end(),
-                        Utility::isNameMatch );
-    Utility::device_search_term =
-            parsed_str_2[0].toLatin1().constData();
-    destination_it = std::find_if( this->master_source_node_pointer_list.begin(),
-                        this->master_source_node_pointer_list.end(),
-                        Utility::isNameMatch );
-    (*source_it)->addMapping( (*destination_it),
-                              parsed_str[1].toLatin1().constData(),
-                              parsed_str_2[1].toLatin1().constData(),
-                              qt_map );
-                              */
-
-    //this->updateMappingView();
 
 }
 
@@ -1170,107 +804,6 @@ void Form::removeSignal( mapper_db_signal record ) {
 void Form::addNewSignal( mapper_db_signal record ) {
 
     this->database->addSignalData( record );
-    //std::list<Node*>::iterator it;
-
-    /*
-    printf( "vijay searching for %s to add signal\n",
-            record->device_name );
-            */
-    /*
-    Utility::device_search_term = record->device_name;
-
-    it = std::find_if( this->master_source_node_pointer_list.begin(),
-                        this->master_source_node_pointer_list.end(),
-                        Utility::isNameMatch );
-
-    printf( "vijay is adding %s %s, which is a %d\n",
-            record->device_name,
-            record->name,
-            record->is_output );
-
-    std::stringstream out;
-    int row_count_before_add;
-
-    QStandardItem* signal_item_1 = new QStandardItem;
-    signal_item_1->setText( record->name );
-
-    QStandardItem* signal_item_2 = new QStandardItem;
-    out.str( "" );
-    out << record->type;
-    signal_item_2->setText( out.str().c_str() );
-
-    QStandardItem* signal_item_3 = new QStandardItem;
-    signal_item_3->setText( record->unit );
-
-    QStandardItem* signal_item_4 = new QStandardItem;
-    out.str( "" );
-    if ( signal_item_2->text() == "f" ) {
-        out << record->minimum->f;
-    }
-    signal_item_4->setText( out.str().c_str() );
-
-    QStandardItem* signal_item_5 = new QStandardItem;
-    out.str( "" );
-    if ( signal_item_2->text() == "f" ) {
-        out << record->maximum->f;
-    }
-    signal_item_5->setText( out.str().c_str() );
-
-    if ( record->is_output == 1 ) {
-
-        row_count_before_add =
-                (*it)->source_model_list[0]->rowCount();
-
-        (*it)->source_model_list[0]->setChild( row_count_before_add,
-                                               0,
-                                               signal_item_1 );
-
-        (*it)->source_model_list[0]->setChild( row_count_before_add,
-                                               1,
-                                               signal_item_2 );
-
-        (*it)->source_model_list[0]->setChild( row_count_before_add,
-                                               2,
-                                               signal_item_3 );
-
-        (*it)->source_model_list[0]->setChild( row_count_before_add,
-                                               3,
-                                               signal_item_4 );
-
-        (*it)->source_model_list[0]->setChild( row_count_before_add,
-                                               4,
-                                               signal_item_5 );
-
-    } else if ( record->is_output == 0 ) {
-
-        row_count_before_add =
-                (*it)->dest_model_list[0]->rowCount();
-
-        (*it)->dest_model_list[0]->setChild( row_count_before_add,
-                                               0,
-                                               signal_item_1 );
-
-        (*it)->dest_model_list[0]->setChild( row_count_before_add,
-                                               1,
-                                               signal_item_2 );
-
-        (*it)->dest_model_list[0]->setChild( row_count_before_add,
-                                               2,
-                                               signal_item_3 );
-
-        (*it)->dest_model_list[0]->setChild( row_count_before_add,
-                                               3,
-                                               signal_item_4 );
-
-        (*it)->dest_model_list[0]->setChild( row_count_before_add,
-                                               4,
-                                               signal_item_5 );
-
-    }
-
-    this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
-    */
-    //this->updateMappingView();
 
     this->clearSourceSignalListDisplay();
     this->updateSourceSignalListDisplay();
@@ -1284,146 +817,17 @@ void Form::addNewSignal( mapper_db_signal record ) {
 
 void Form::removeDevice( mapper_db_device record ) {
 
-    /*
-    std::list<mapper_db_device>::iterator dbit;
-    Utility::device_search_struct = record;
-    std::remove_if( this->database->device_struct_list.begin(),
-                         this->database->device_struct_list.end(),
-                         Utility::findDbDevice );
-                         */
-
     this->database->removeDeviceData( record );
-
-    /*
-    const char* name = record->name;
-
-    std::list<Node*>::iterator it;
-    Utility::device_search_term = name;
-    it = std::find_if( this->master_source_node_pointer_list.begin(),
-                      this->master_source_node_pointer_list.end(),
-                      Utility::isNameMatch );
-    scene->removeItem(*it);
-
-    if ( (*it)->is_source ) {
-
-        this->removeNodeFromSourceView( (*it) );
-        (*it)->conflict_flag = 0;
-
-    } else if ( (*it)->is_destination ) {
-
-        this->removeNodeFromDestinationView( (*it) );
-        (*it)->conflict_flag = 0;
-
-    }
-    this->master_source_node_pointer_list.remove_if( Utility::isNameMatch );
-    */
-
-    this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
 
 }
 void Form::addNewDevice( mapper_db_device record ) {
 
     this->database->addDeviceData( record );
 
-    /*
-    const char* name = record->name;
-    const char* host = record->host;
-    int port = record->port;
-    int can_alias = false;
-
-    std::string temp_string;
-    std::stringstream out;
-    */
-
-    /*
-    Node* new_device = new Node(graphics_view);
-
-    this->master_source_node_pointer_list.push_back( new_device );
-    this->master_source_node_pointer_list.back()->setName( name );
-    scene->addItem(this->master_source_node_pointer_list.back());
-    */
-
-    /*
-    QStandardItem* source_item_1 = new QStandardItem;
-    QStandardItem* source_item_2 = new QStandardItem;
-    QStandardItem* source_item_3 = new QStandardItem;
-    QStandardItem* source_item_4 = new QStandardItem;
-    QStandardItem* source_item_5 = new QStandardItem;
-    QStandardItem* source_pointer_item = new QStandardItem;
-    source_item_1->setText( name );
-    source_item_2->setText( host );
-    out << port;
-    source_item_3->setText( out.str().c_str() );
-    out.str( "" );
-    out << can_alias;
-    source_item_4->setText( out.str().c_str() );
-    out.str( "" );
-    out << (int)new_device;
-    source_pointer_item->setText( out.str().c_str() );
-    //this->master_source_node_pointer_list.back()->source_model_list
-            << source_item_1
-            << source_item_2
-            << source_item_3
-            << source_item_4
-            << source_item_5
-            << source_pointer_item;
-
-    QStandardItem* destination_item_1 = new QStandardItem;
-    QStandardItem* destination_item_2 = new QStandardItem;
-    QStandardItem* destination_item_3 = new QStandardItem;
-    QStandardItem* destination_item_4 = new QStandardItem;
-    QStandardItem* destination_item_5 = new QStandardItem;
-    QStandardItem* destination_pointer_item = new QStandardItem;
-    destination_item_1->setText( name );
-    destination_item_2->setText( host );
-    out.str( "" );
-    out << port;
-    destination_item_3->setText( out.str().c_str() );
-    out.str( "" );
-    out << can_alias;
-    destination_item_4->setText( out.str().c_str() );
-    out.str( "" );
-    out << (int)new_device;
-    destination_pointer_item->setText( out.str().c_str() );
-    this->master_source_node_pointer_list.back()->dest_model_list
-            << destination_item_1
-            << destination_item_2
-            << destination_item_3
-            << destination_item_4
-            << destination_item_5
-            << destination_pointer_item;
-    */
-
-
-    /*
-    QObject::connect( this->node_pointer_list.back(),
-                         SIGNAL(selectionStateChanged(bool)),
-                         this,
-                         SLOT(updateSelectedNodes(bool)) );
-
-    QObject::connect( this->node_pointer_list.back(),
-                      SIGNAL(nodePressed(Node*)),
-                      this,
-                      SLOT(updatePressedNode(Node*)));
-    QObject::connect( this->node_pointer_list.back(),
-                      SIGNAL(nodeReleased(Node*)),
-                      this,
-                      SLOT(updateReleasedNode(Node*)));
-                      */
-
-    /*
-    this->addNodeToSourceView( new_device );
-    this->addNodeToDestinationView( new_device );
-    */
-
-    //this->changeVisualizationMode( this->vis_mode_toggle->currentIndex() );
-
-    clearSourceDeviceListDisplay();
-    clearDestDeviceListDisplay();
-    updateSourceDeviceListDisplay();
-    updateDestDeviceListDisplay();
-
-    //this->updateMappingView();
+    this->clearSourceDeviceListDisplay();
+    this->clearDestDeviceListDisplay();
+    this->updateSourceDeviceListDisplay();
+    this->updateDestDeviceListDisplay();
 
 }
 
@@ -1794,9 +1198,11 @@ void Form::removeNodeFromSourceView( Node* the_node ) {
 
 void Form::updatePressedLink( Link *reference ) {
 
+    /*
     printf("updatePressedLink source %s dest %s\n",
            reference->source_signal_name,
            reference->dest_signal_name );
+           */
     mapper_monitor_disconnect( this->mon,
                                reference->source_signal_name,
                                reference->dest_signal_name );
@@ -1838,7 +1244,7 @@ void Form::updateUnselectedLink( Link* reference ) {
 
 void Form::updatePressedNode( Node* reference ) {
 
-    printf( "form says -> pressed node %s\n", reference->name );
+    //printf( "form says -> pressed node %s\n", reference->name );
     this->active_node_name = reference->name;
 
 }

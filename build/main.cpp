@@ -25,8 +25,8 @@ void dbDeviceCallbackFunction( mapper_db_device record,
                                 mapper_db_action_t action,
                                 void* user ) {
 
-    printf( "Form::db_device_callback_function( ... )\n" );
-    printf( "record->name %s action %d user %p \n",
+    printf( "\nForm::db_device_callback_function( ... )\n" );
+    printf( "record->name %s action %d user %p \n\n",
             record->name, action, user );
 
 
@@ -56,8 +56,8 @@ void dbSignalCallbackFunction( mapper_db_signal record,
                                 mapper_db_action_t action,
                                 void* user ) {
 
-    printf( "Form::db_signal_callback_function( ... )\n" );
-    printf( "device_name %s name %s type %c is_output %d action %d user %p \n",
+    printf( "\nForm::db_signal_callback_function( ... )\n" );
+    printf( "device_name %s name %s type %c is_output %d action %d user %p \n\n",
             record->device_name, record->name, record->type, record->is_output, action, user );
     if ( action == MDB_NEW ) {
 
@@ -75,8 +75,8 @@ void dbLinkCallbackFunction( mapper_db_link record,
                                 mapper_db_action_t action,
                                 void* user ) {
 
-    printf( "Form::db_link_callback_function( ... )\n" );
-    printf( "record->src %s record->dest %s action %d user %p \n",
+    printf( "\nForm::db_link_callback_function( ... )\n" );
+    printf( "record->src %s record->dest %s action %d user %p \n\n",
             record->src_name, record->dest_name, action, user );
 
 }

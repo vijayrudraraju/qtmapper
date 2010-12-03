@@ -40,6 +40,12 @@ bool Utility::findDbSignal( mapper_db_signal i ) {
 
 }
 
+bool Utility::findDbSignalPair( std::pair<mapper_db_device, mapper_db_signal> i ) {
+
+    return !strcmp( i.second->name, signal_search_struct->name );
+
+}
+
 bool Utility::findDbMapping( mapper_db_mapping i ) {
 
     return !( strcmp(i->src_name, mapping_search_struct->src_name ) &&
