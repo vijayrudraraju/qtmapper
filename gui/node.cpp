@@ -48,14 +48,14 @@ Node::~Node(  ) {
     }
     this->source_model_list.clear();
 
-    for ( QList<QStandardItem*>::iterator it = this->destination_model_list.begin();
-            it != this->destination_model_list.end();
+    for ( QList<QStandardItem*>::iterator it = this->dest_model_list.begin();
+            it != this->dest_model_list.end();
             it++ ) {
 
         delete (*it);
 
     }
-    this->destination_model_list.clear();
+    this->dest_model_list.clear();
 
     for ( std::list<qt_mapping>::iterator it = this->destination_list.begin();
             it != this->destination_list.end();
@@ -77,22 +77,26 @@ void Node::setName( const char* new_name ) {
 
 void Node::addMapping( Node* destination,
                        const char* source_signal_name,
-                       const char* destination_signal_name ) {
+                       const char* destination_signal_name,
+                       qt_mapping mapping ) {
 
+    /*
     qt_mapping qt_map =
             (qt_mapping) calloc( 1, sizeof(struct _qt_mapping) );
 
     qt_map->destination_node = destination;
-    qt_map->source_signal_name = strdup(source_signal_name);
-    qt_map->destination_signal_name = strdup(destination_signal_name);
+    qt_map->src_name = strdup(source_signal_name);
+    qt_map->dest_name = strdup(destination_signal_name);
+    */
 
-    this->destination_list.push_back( qt_map );
+    mapping->destination_node = destination;
+    this->destination_list.push_back( mapping );
 
     printf( "Node::addMapping %s - %s %s %s\n",
             this->name,
             this->destination_list.back()->destination_node->name,
-            this->destination_list.back()->source_signal_name,
-            this->destination_list.back()->destination_signal_name);
+            this->destination_list.back()->src_name,
+            this->destination_list.back()->dest_name);
 
 }
 

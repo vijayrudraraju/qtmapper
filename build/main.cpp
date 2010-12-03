@@ -33,17 +33,20 @@ void dbDeviceCallbackFunction( mapper_db_device record,
 
     if ( action == MDB_NEW ) {
 
-        form->addNewDevice( record->name,
+        /*form->addNewDevice( record->name,
                             record->host,
                             record->port,
                             false );
+                            */
+        form->addNewDevice( record );
         mapper_monitor_request_signals_by_name( qtmapper, record->name );
         mapper_monitor_request_links_by_name( qtmapper, record->name );
         mapper_monitor_request_mappings_by_name( qtmapper, record->name );
 
     } else if ( action == MDB_REMOVE ) {
 
-        form->removeDevice( record->name );
+        //form->removeDevice( record->name );
+        form->removeDevice( record );
 
     }
 
@@ -54,8 +57,8 @@ void dbSignalCallbackFunction( mapper_db_signal record,
                                 void* user ) {
 
     printf( "Form::db_signal_callback_function( ... )\n" );
-    printf( "name %s type %c is_output %d action %d user %p \n",
-            record->name, record->type, record->is_output, action, user );
+    printf( "device_name %s name %s type %c is_output %d action %d user %p \n",
+            record->device_name, record->name, record->type, record->is_output, action, user );
     if ( action == MDB_NEW ) {
 
         form->addNewSignal( record );
@@ -82,11 +85,18 @@ void dbMappingCallbackFunction( mapper_db_mapping record,
                                 mapper_db_action_t action,
                                 void* user ) {
 
-    printf( "Form::db_mapping_callback_function( ... )\n" );
-    printf( "src_name %s dest_name %s src_type %c dest_type %c action %d user %p \n",
-            record->src_name, record->dest_name,
-            record->src_type, record->dest_type,
-            action, user );
+    printf( "\nForm::db_mapping_callback_function( ... )\n" );
+    printf( "src_name %s src_type %c dest_name %s dest_type %c\n",
+            record->src_name, record->src_type,
+            record->dest_name, record->dest_type );
+    printf( "clip_upper %d clip_lower %d\n",
+            record->clip_max, record->clip_min );
+    printf( "range.src_min %f range.src_max %f range.dest_min %f range.dest_max %f\n",
+            record->range.src_min, record->range.src_max,
+            record->range.dest_min, record->range.dest_max );
+    printf( "expr %s, mode %d, muted %d\n\n",
+            record->expression, record->mode, record->muted );
+
     if ( action == MDB_NEW ) {
 
         form->addNewMapping( record );
@@ -100,6 +110,7 @@ void dbMappingCallbackFunction( mapper_db_mapping record,
 }
 
 void wait_local_devices() {
+
 /*
     while ( !mdev_ready(qtmapper) ) {
 
@@ -111,6 +122,8 @@ void wait_local_devices() {
     */
 
 }
+
+
 
 int setup_qtmapper(  ) {
 
@@ -138,6 +151,8 @@ void cleanup_qtmapper(  ) {
     }
 
 }
+
+
 
 int main( int argc, char *argv[] ) {
 

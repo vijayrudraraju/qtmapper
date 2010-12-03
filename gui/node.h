@@ -1,6 +1,8 @@
 #ifndef NODE_H
 #define NODE_H
 
+#include <mapper/mapper_db.h>
+
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
@@ -16,11 +18,34 @@
 class Form;
 class Node;
 
+/*
+class qt_mapping : public _mapper_db_mapping {
+
+public:
+    Node* destination_node;
+
+};
+*/
+
 typedef struct _qt_mapping {
 
     Node* destination_node;
-    const char* source_signal_name;
-    const char* destination_signal_name;
+
+    char* src_name;
+    char* dest_name;
+
+    char src_type;
+    char dest_type;
+
+    mapper_clipping_type clip_max;
+    mapper_clipping_type clip_min;
+
+    mapper_mapping_range_t range;
+    char* expression;
+
+    mapper_mode_type mode;
+
+    int muted;
 
 } *qt_mapping;
 
@@ -45,11 +70,12 @@ public:
     void setName( const char* new_name );
 
     QList<QStandardItem*> source_model_list;
-    QList<QStandardItem*> destination_model_list;
+    QList<QStandardItem*> dest_model_list;
 
     void addMapping( Node* destination,
                     const char* source_signal_name,
-                    const char* destination_signal_name );
+                    const char* destination_signal_name,
+                    qt_mapping mapping );
     void removeMapping( Node* destination,
                     const char* source_signal_name,
                     const char* destination_signal_name );

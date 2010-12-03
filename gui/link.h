@@ -5,6 +5,10 @@
 #include <QGraphicsView>
 #include <QGraphicsItem>
 
+#include <mapper/mapper_db.h>
+
+#include "node.h"
+
 class Link : public QObject, public QGraphicsLineItem {
 
     Q_OBJECT
@@ -16,7 +20,7 @@ public:
 
     char source_signal_name[1024];
     char dest_signal_name[1024];
-    const char* expr;
+    mapper_db_mapping mapping;
 
     bool is_deletable;
     bool is_selected;
@@ -24,6 +28,8 @@ public:
 
 signals:
     void linkPressed( Link* reference );
+    void linkSelected( Link* reference );
+    void linkUnselected( Link* reference );
 
 private:
     QGraphicsView* view;

@@ -10,6 +10,7 @@
 
 #include "ui_form.h"
 #include "link.h"
+#include "mapperdata.h"
 #include "mappergraphicsscene.h"
 
 class Node;
@@ -21,16 +22,29 @@ class Form : public QWidget, private Ui::Form {
 public:
     explicit Form(QWidget *parent = 0);
 
+    void clearSourceDeviceListDisplay();
+    void updateSourceDeviceListDisplay();
+    void clearDestDeviceListDisplay();
+    void updateDestDeviceListDisplay();
+
+    void clearSourceSignalListDisplay();
+    void updateSourceSignalListDisplay();
+    void clearDestSignalListDisplay();
+    void updateDestSignalListDisplay();
+
     void addNode();
     void sendNewMappingRequest( const char* source_signal_path,
                                 const char* dest_signal_path );
 
     //int (*createTestDeviceFunction)();
-    void removeDevice( const char* name );
+    void removeDevice( mapper_db_device record );
+    /*
     void addNewDevice( const char* name,
                        const char* host,
                        int port,
-                       int can_alias );
+                       int can_alias );*/
+    void addNewDevice( mapper_db_device record );
+
     void removeSignal( mapper_db_signal record );
     void addNewSignal( mapper_db_signal record );
     void removeMapping( mapper_db_mapping record );
@@ -59,15 +73,22 @@ public slots:
     void updateMappingView( );
 
     void updateDeleteButtonState( bool checked );
+
     void updatePressedLink( Link* reference );
+    void updateSelectedLink( Link* reference );
+    void updateUnselectedLink( Link* reference );
+    void updateLinkParameterDisplay( Link *reference );
+    void clearLinkParameterDisplay( );
 
     void updateSelectedNodes( bool is_selected );
+    void updatePressedNode( Node* reference );
+    void updateReleasedNode( Node* reference );
+
     void updateSelectionMode( int index );
     void updateEditSelectionMode( int index );
 
     void updateMouseState( bool is_pressed );
-    void updatePressedNode( Node* reference );
-    void updateReleasedNode( Node* reference );
+
     void newDoubleClick( );
 
     void beginToDrawMapping( const QModelIndex& index );
@@ -98,12 +119,16 @@ private:
 
     void clearMappingView( );
 
+    MapperData* database;
+
     int timerId;
 
-    std::list<Node*> master_source_node_pointer_list;
-    std::list<Node*> master_dest_node_pointer_list;
+    //std::list<Node*> master_source_node_pointer_list;
+    //std::list<Node*> master_dest_node_pointer_list;
 
     std::list<Link*> displayed_mapping_list;
+    std::list<Link*> selected_mapping_list;
+
     std::list<QGraphicsItem*> visualization_links;
 
     MapperGraphicsScene* scene;
@@ -120,10 +145,10 @@ private:
     mapper_monitor mon;
 
     QStandardItemModel* displayed_source_model;
-    QStandardItemModel* displayed_destination_model;
+    QStandardItemModel* displayed_dest_model;
 
     QGraphicsItem* selected_source_circle;
-    QGraphicsItem* selected_destination_circle;
+    QGraphicsItem* selected_dest_circle;
 
     QPersistentModelIndex selected_signal;
     int signal_selected_flag;

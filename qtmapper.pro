@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS = gui
+SUBDIRS = gui data
 
 QMAKE_CLEAN += *.dylib *.a
 

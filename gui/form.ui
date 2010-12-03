@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>812</width>
+    <width>875</width>
     <height>801</height>
    </rect>
   </property>
@@ -34,6 +34,9 @@
      <property name="enabled">
       <bool>true</bool>
      </property>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
+     </property>
      <property name="tabPosition">
       <enum>QTabWidget::North</enum>
      </property>
@@ -60,7 +63,7 @@
        <enum>Qt::LeftToRight</enum>
       </property>
       <attribute name="title">
-       <string>edit</string>
+       <string>text</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <property name="spacing">
@@ -77,7 +80,47 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="focusPolicy">
+          <enum>Qt::StrongFocus</enum>
+         </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QCheckBox" name="checkBox">
+            <property name="layoutDirection">
+             <enum>Qt::RightToLeft</enum>
+            </property>
+            <property name="text">
+             <string>muted</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>100</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>mode</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="comboBox">
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QLabel" name="label_14">
             <property name="text">
@@ -86,7 +129,17 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit"/>
+           <widget class="QLineEdit" name="lineEdit">
+            <property name="minimumSize">
+             <size>
+              <width>200</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_3">
@@ -105,32 +158,12 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>60</width>
+              <width>40</width>
               <height>16777215</height>
              </size>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit_4">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>60</width>
-              <height>16777215</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_13">
-            <property name="text">
-             <string>input range</string>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
             </property>
            </widget>
           </item>
@@ -144,14 +177,24 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>60</width>
+              <width>40</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_5">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>input range</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_3">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -160,9 +203,31 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>60</width>
+              <width>40</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_4">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>40</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
             </property>
            </widget>
           </item>
@@ -301,7 +366,7 @@
              <set>QAbstractItemView::NoEditTriggers</set>
             </property>
             <property name="alternatingRowColors">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="indentation">
              <number>13</number>
@@ -361,7 +426,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QTreeView" name="destination_signal_list">
+           <widget class="QTreeView" name="dest_signal_list">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -382,6 +447,9 @@
             </property>
             <property name="editTriggers">
              <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+            <property name="alternatingRowColors">
+             <bool>true</bool>
             </property>
             <property name="indentation">
              <number>13</number>
@@ -404,7 +472,7 @@
        <bool>false</bool>
       </property>
       <attribute name="title">
-       <string>neighborhood</string>
+       <string>graphics</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="spacing">

@@ -22,6 +22,8 @@ Link::Link( QGraphicsView *viewWidget, QGraphicsScene* new_scene  )
     this->is_deletable = false;
     this->is_selected = false;
 
+    //expr = "y=x";
+
     this->setPen( QPen(QBrush(QColor( 0, 0, 0 )), 2) );
 
 }
@@ -40,9 +42,11 @@ QVariant Link::itemChange(GraphicsItemChange change, const QVariant &value) {
             if (value.toBool()) {
                 this->setPen( QPen(QBrush(QColor( 0, 255, 0 )), 2) );
                 this->update();
+                emit linkSelected( this );
             } else {
-                this->setPen( QPen(QBrush(QColor( 0, 255, 0 )), 2) );
+                this->setPen( QPen(QBrush(QColor( 0, 0, 0 )), 2) );
                 this->update();
+                emit linkUnselected( this );
             }
             break;
         default:

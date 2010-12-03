@@ -4,7 +4,7 @@
 
 TEMPLATE = app
 
-LIBS += -lgui
+LIBS += -lgui -ldata
 
 SOURCES += main.cpp #\
 #    guithread.cpp

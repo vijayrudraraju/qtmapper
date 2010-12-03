@@ -5,6 +5,11 @@ const char* Utility::mapping_device_term;
 const char* Utility::mapping_dest_signal_term;
 const char* Utility::mapping_source_signal_term;
 
+mapper_db_device Utility::device_search_struct;
+const char* Utility::device_search_struct_name;
+mapper_db_signal Utility::signal_search_struct;
+mapper_db_mapping Utility::mapping_search_struct;
+
 bool Utility::nodeSortInputsFunction( Node* first, Node* second ) {
 
     return ( (int)(first->inputs) < (int)(second->inputs) );
@@ -14,6 +19,31 @@ bool Utility::nodeSortInputsFunction( Node* first, Node* second ) {
 bool Utility::nodeSortOutputsFunction( Node* first, Node* second ) {
 
     return ( (int)(first->outputs) < (int)(second->outputs) );
+
+}
+
+bool Utility::findDbDevice( mapper_db_device i ) {
+
+    return !strcmp( i->name, device_search_struct->name );
+
+}
+
+bool Utility::findDbDeviceByName( mapper_db_device i ) {
+
+    return !strcmp( i->name, device_search_struct_name );
+
+}
+
+bool Utility::findDbSignal( mapper_db_signal i ) {
+
+    return !strcmp( i->name, signal_search_struct->name );
+
+}
+
+bool Utility::findDbMapping( mapper_db_mapping i ) {
+
+    return !( strcmp(i->src_name, mapping_search_struct->src_name ) &&
+              strcmp(i->dest_name, mapping_search_struct->dest_name ) );
 
 }
 
@@ -27,8 +57,8 @@ bool Utility::isNameMatch( Node* i ) {
 bool Utility::findMapping( qt_mapping i ) {
 
     if ( !strcmp( i->destination_node->name, mapping_device_term ) &&
-         !strcmp( i->source_signal_name, mapping_source_signal_term ) &&
-         !strcmp( i->destination_signal_name, mapping_dest_signal_term ) ) {
+         !strcmp( i->src_name, mapping_source_signal_term ) &&
+         !strcmp( i->dest_name, mapping_dest_signal_term ) ) {
 
         return true;
 

@@ -10,8 +10,8 @@ CONFIG += link_pkgconfig
 
 PKGCONFIG += libmapper-0 liblo
 
-INCLUDEPATH += . .. $$PWD/gui
-LIBS += -L$$PWD/gui
+INCLUDEPATH += . .. $$PWD/gui $$PWD/data
+LIBS += -L$$PWD/gui -L$$PWD/data
 
 WARNINGS += -Wall
 
