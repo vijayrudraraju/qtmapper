@@ -26,12 +26,6 @@ Form::Form( QWidget *parent ) :
     graphics_view->setMinimumSize( 600, 300 );
     graphics_view->setAlignment( Qt::AlignLeft|Qt::AlignTop );
     graphics_view->setSceneRect( -400, -400, 4000, 4000 );
-    //scene->setItemIndexMethod( QGraphicsScene::NoIndex );
-    //scene->setStickyFocus( true );
-    //graphics_view->
-    //        setCacheMode( QGraphicsView::CacheBackground );
-    //graphics_view->
-     //       setViewportUpdateMode( QGraphicsView::FullViewportUpdate );
 
     graphics_view_2->setScene( &mapping_scene );
     graphics_view_2->installEventFilter( this );
@@ -52,15 +46,6 @@ Form::Form( QWidget *parent ) :
 
     source_signal_list->setModel( displayed_source_model );
     dest_signal_list->setModel( displayed_dest_model );
-
-    /*
-    this->source_list->setColumnHidden( 4, true );
-    this->destination_list->setColumnHidden( 4, true );
-    this->source_signal_list->setColumnHidden( 3, true );
-    this->destination_signal_list->setColumnHidden( 3, true );
-    this->source_signal_list->setColumnHidden( 4, true );
-    this->destination_signal_list->setColumnHidden( 4, true );
-    */
 
     this->active_node_name = "";
     this->selected_source_circle = NULL;
@@ -247,6 +232,10 @@ void Form::update(  ) {
     this->source_signal_list->resizeColumnToContents( 3 );
     this->source_signal_list->resizeColumnToContents( 4 );
     this->source_signal_list->resizeColumnToContents( 5 );
+
+    this->updateMappingView();
+
+    this->updateIsDeletable( this->deleteButton->isChecked() );
 
 }
 
@@ -790,6 +779,7 @@ void Form::removeMapping( mapper_db_mapping record ) {
 }
 void Form::addNewMapping( mapper_db_mapping record ) {
 
+    printf( "\nForm::addNewMapping( ... )\n" );
     this->database->addMappingData( record );
 
 }

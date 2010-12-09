@@ -120,11 +120,11 @@ void MapperData::updateMappingPair( mapper_db_mapping record ) {
     it = std::find_if( this->device_struct_list.begin(),
                         this->device_struct_list.end(),
                         Utility::findDbDeviceByName );
-    printf("device name %s", (*it)->name);
+    //printf("device name %s\n", (*it)->name);
 
     ret = signal_struct_map.equal_range( (*it) );
     itt = ret.first;
-    printf("signal name %s", (*itt).second->name);
+    //printf("signal name %s\n", (*itt).second->name);
     for ( itt = ret.first; itt != ret.second; ++itt ) {
 
         if ( !strcmp((*itt).second->name,

@@ -85,7 +85,8 @@ void dbMappingCallbackFunction( mapper_db_mapping record,
                                 mapper_db_action_t action,
                                 void* user ) {
 
-    printf( "\nForm::db_mapping_callback_function( ... )\n" );
+    printf( "\nForm::db_mapping_callback_function( ... ) action %d\n",
+            action );
     printf( "src_name %s src_type %c dest_name %s dest_type %c\n",
             record->src_name, record->src_type,
             record->dest_name, record->dest_type );
