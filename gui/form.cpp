@@ -31,16 +31,11 @@ Form::Form( QWidget *parent ) :
     graphics_view_2->installEventFilter( this );
     graphics_view_2->setAlignment( Qt::AlignLeft|Qt::AlignTop );
 
-    QStringList header_labels;
-    header_labels << "signal name" << "type" << "units" << "min" << "max";
-
     displayed_source_model = new QStandardItemModel( 0, 6 );
-    displayed_source_model->setHorizontalHeaderLabels( header_labels );
     source_list->setModel( displayed_source_model );
     source_list->setMinimumSize( 600, 200 );
 
     displayed_dest_model = new QStandardItemModel( 0, 6 );
-    displayed_dest_model->setHorizontalHeaderLabels( header_labels );
     destination_list->setModel( displayed_dest_model );
     destination_list->setMinimumSize( 600, 200 );
 
@@ -52,6 +47,229 @@ Form::Form( QWidget *parent ) :
     this->selected_dest_circle = NULL;
 
     this->signal_selected_flag = 0;
+
+    this->initSignalsAndSlots();
+    this->initLabels();
+    this->initLinkParameterDisplay();
+
+    setWindowTitle( tr("libmapper monitor") );
+
+}
+
+void Form::muteChanged( int flag ) {
+
+    printf( "Form::muteChanged %d\n", flag );
+
+    for ( std::list<Link*>::iterator it =
+            this->selected_mapping_list.begin();
+            it != this->selected_mapping_list.end();
+            it++ ) {
+
+        (*it)->mapping->muted = flag;
+        mapper_monitor_mapping_modify( this->mon,
+                                       (*it)->mapping,
+                                       MAPPING_MUTED );
+
+    }
+
+}
+void Form::mapTypeChanged( int index ) {
+
+    for ( std::list<Link*>::iterator it =
+            this->selected_mapping_list.begin();
+            it != this->selected_mapping_list.end();
+            it++ ) {
+
+        (*it)->mapping->mode = (mapper_mode_type)index;
+        mapper_monitor_mapping_modify( this->mon,
+                                       (*it)->mapping,
+                                       MAPPING_MODE );
+
+    }
+
+}
+void Form::exprChanged( QString expr ) {
+
+    for ( std::list<Link*>::iterator it =
+            this->selected_mapping_list.begin();
+            it != this->selected_mapping_list.end();
+            it++ ) {
+
+        (*it)->mapping->expression = expr.toLatin1().data();
+        mapper_monitor_mapping_modify( this->mon,
+                                       (*it)->mapping,
+                                       MAPPING_EXPRESSION );
+
+    }
+
+}
+void Form::sourceMinRangeChanged( QString number ) {
+
+    for ( std::list<Link*>::iterator it =
+            this->selected_mapping_list.begin();
+            it != this->selected_mapping_list.end();
+            it++ ) {
+
+        (*it)->mapping->range.src_min = number.toFloat();
+        mapper_monitor_mapping_modify( this->mon,
+                                       (*it)->mapping,
+                                       MAPPING_RANGE_KNOWN );
+
+    }
+
+}
+void Form::sourceMaxRangeChanged( QString number ) {
+
+    for ( std::list<Link*>::iterator it =
+            this->selected_mapping_list.begin();
+            it != this->selected_mapping_list.end();
+            it++ ) {
+
+        (*it)->mapping->range.src_max = number.toFloat();
+        mapper_monitor_mapping_modify( this->mon,
+                                       (*it)->mapping,
+                                       MAPPING_RANGE_KNOWN );
+
+    }
+
+}
+void Form::destMinRangeChanged( QString number ) {
+
+    for ( std::list<Link*>::iterator it =
+            this->selected_mapping_list.begin();
+            it != this->selected_mapping_list.end();
+            it++ ) {
+
+        (*it)->mapping->range.dest_min = number.toFloat();
+        mapper_monitor_mapping_modify( this->mon,
+                                       (*it)->mapping,
+                                       MAPPING_RANGE_KNOWN );
+
+    }
+
+}
+void Form::destMaxRangeChanged( QString number ) {
+
+    for ( std::list<Link*>::iterator it =
+            this->selected_mapping_list.begin();
+            it != this->selected_mapping_list.end();
+            it++ ) {
+
+        (*it)->mapping->range.dest_max = number.toFloat();
+        mapper_monitor_mapping_modify( this->mon,
+                                       (*it)->mapping,
+                                       MAPPING_RANGE_KNOWN );
+
+    }
+
+}
+void Form::minClipTypeChanged( int index ) {
+
+    for ( std::list<Link*>::iterator it =
+            this->selected_mapping_list.begin();
+            it != this->selected_mapping_list.end();
+            it++ ) {
+
+        (*it)->mapping->clip_min = (mapper_clipping_type)index;
+        mapper_monitor_mapping_modify( this->mon,
+                                       (*it)->mapping,
+                                       MAPPING_CLIPMIN );
+
+    }
+
+}
+void Form::maxClipTypeChanged( int index ) {
+
+    for ( std::list<Link*>::iterator it =
+            this->selected_mapping_list.begin();
+            it != this->selected_mapping_list.end();
+            it++ ) {
+
+        (*it)->mapping->clip_max = (mapper_clipping_type)index;
+        mapper_monitor_mapping_modify( this->mon,
+                                       (*it)->mapping,
+                                       MAPPING_CLIPMAX );
+
+    }
+
+}
+
+void Form::initLabels() {
+
+    QStringList header_labels;
+    header_labels << "signal name" << "type" << "units" << "min" << "max";
+
+    displayed_source_model->setHorizontalHeaderLabels( header_labels );
+    displayed_dest_model->setHorizontalHeaderLabels( header_labels );
+
+    QList<QString> mode_str;
+    mode_str.append("");
+    mode_str.append("bypass");
+    mode_str.append("line");
+    mode_str.append("expression");
+    mode_str.append("calibrate");
+    this->mapTypeComboBox->addItems( mode_str );
+
+    mode_str.clear();
+    mode_str.append("none");
+    mode_str.append("mute");
+    mode_str.append("clamp");
+    mode_str.append("fold");
+    mode_str.append("wrap");
+    this->minClipTypeComboBox->addItems( mode_str );
+    this->maxClipTypeComboBox->addItems( mode_str );
+
+    QString picker_str[7];
+    picker_str[0] = "# of signals";
+    picker_str[1] = "# of inputs";
+    picker_str[2] = "# of outputs";
+    picker_str[3] = "# of connections";
+    picker_str[4] = "position x";
+    picker_str[5] = "temperature";
+    picker_str[6] = "update rate";
+
+    for ( int i=0; i<7; i++ ) {
+
+        this->x_param_picker->addItem( picker_str[i] );
+        this->y_param_picker->addItem( picker_str[i] );
+
+        this->size_param_picker->addItem( picker_str[i] );
+        this->size_param_picker_2->addItem( picker_str[i] );
+
+        this->sides_param_picker->addItem( picker_str[i] );
+        this->sides_param_picker_2->addItem( picker_str[i] );
+
+        this->concavity_param_picker->addItem( picker_str[i] );
+        this->concavity_param_picker_2->addItem( picker_str[i] );
+
+        this->color_param_picker->addItem( picker_str[i] );
+        this->color_param_picker_2->addItem( picker_str[i] );
+
+        this->dist_param_picker->addItem( picker_str[i] );
+
+    }
+
+}
+void Form::initSignalsAndSlots() {
+
+    connect( this->muteCheckBox, SIGNAL(stateChanged(int)),
+             this, SLOT(muteChanged(int)) );
+    connect( this->mapTypeComboBox, SIGNAL(currentIndexChanged(int)),
+             this, SLOT(mapTypeChanged(int)) );
+    connect( this->exprEdit, SIGNAL(textChanged(QString)),
+             this, SLOT(exprChanged(QString)) );
+    connect( this->sourceMinRangeEdit, SIGNAL(textChanged(QString)),
+             this, SLOT(sourceMinRangeChanged(QString)) );
+    connect( this->sourceMaxRangeEdit, SIGNAL(textChanged(QString)),
+             this, SLOT(sourceMaxRangeChanged(QString)) );
+    connect( this->destMinRangeEdit, SIGNAL(textChanged(QString)),
+             this, SLOT(destMinRangeChanged(QString)) );
+    connect( this->destMaxRangeEdit, SIGNAL(textChanged(QString)),
+             this, SLOT(destMaxRangeChanged(QString)) );
+    connect( this->minClipTypeComboBox, SIGNAL(currentIndexChanged(int)),
+             this, SLOT(minClipTypeChanged(int)) );
+    connect( this->maxClipTypeComboBox, SIGNAL(currentIndexChanged(int)),
+             this, SLOT(maxClipTypeChanged(int)) );
 
     connect( this->source_signal_list, SIGNAL(clicked(QModelIndex)),
              this, SLOT(beginToDrawMapping(QModelIndex)) );
@@ -96,49 +314,7 @@ Form::Form( QWidget *parent ) :
              this, SLOT(clearDests()));
     */
 
-    QList<QString> mode_str;
-    mode_str.append("");
-    mode_str.append("bypass");
-    mode_str.append("line");
-    mode_str.append("expression");
-    mode_str.append("calibrate");
-    this->comboBox->addItems( mode_str );
-
-    QString picker_str[7];
-    picker_str[0] = "# of signals";
-    picker_str[1] = "# of inputs";
-    picker_str[2] = "# of outputs";
-    picker_str[3] = "# of connections";
-    picker_str[4] = "position x";
-    picker_str[5] = "temperature";
-    picker_str[6] = "update rate";
-
-    for ( int i=0; i<7; i++ ) {
-
-        this->x_param_picker->addItem( picker_str[i] );
-        this->y_param_picker->addItem( picker_str[i] );
-
-        this->size_param_picker->addItem( picker_str[i] );
-        this->size_param_picker_2->addItem( picker_str[i] );
-
-        this->sides_param_picker->addItem( picker_str[i] );
-        this->sides_param_picker_2->addItem( picker_str[i] );
-
-        this->concavity_param_picker->addItem( picker_str[i] );
-        this->concavity_param_picker_2->addItem( picker_str[i] );
-
-        this->color_param_picker->addItem( picker_str[i] );
-        this->color_param_picker_2->addItem( picker_str[i] );
-
-        this->dist_param_picker->addItem( picker_str[i] );
-
-    }
-
-    setWindowTitle( tr("libmapper monitor") );
-
 }
-
-
 
 void Form::clearSources() {
 
@@ -233,7 +409,7 @@ void Form::update(  ) {
     this->source_signal_list->resizeColumnToContents( 4 );
     this->source_signal_list->resizeColumnToContents( 5 );
 
-    this->updateMappingView();
+    //this->updateMappingView();
 
     this->updateIsDeletable( this->deleteButton->isChecked() );
 
@@ -772,6 +948,13 @@ void Form::updateMappingView( ) {
 }
 
 
+
+void Form::modifyMapping( mapper_db_mapping record ) {
+
+    printf( "\nForm::modifyMapping( ... )\n\n" );
+    this->database->modifyMappingData( record );
+
+}
 void Form::removeMapping( mapper_db_mapping record ) {
 
     this->database->removeMappingData( record );
@@ -961,14 +1144,18 @@ void Form::updateSourceSignalListDisplay() {
         QStandardItem* item_4 = new QStandardItem;
         out.str( "" );
         if ( item_2->text() == "f" ) {
-            out << (*it).second->minimum->f;
+            if ( (*it).second->minimum != NULL ) {
+               out << (*it).second->minimum->f;
+            }
         }
         item_4->setText( out.str().c_str() );
 
         QStandardItem* item_5 = new QStandardItem;
         out.str( "" );
         if ( item_2->text() == "f" ) {
-            out << (*it).second->maximum->f;
+            if ( (*it).second->maximum != NULL ) {
+                out << (*it).second->maximum->f;
+            }
         }
         item_5->setText( out.str().c_str() );
 
@@ -1047,14 +1234,18 @@ void Form::updateDestSignalListDisplay() {
         QStandardItem* item_4 = new QStandardItem;
         out.str( "" );
         if ( item_2->text() == "f" ) {
-            out << (*it).second->minimum->f;
+            if ( (*it).second->minimum != NULL ) {
+                out << (*it).second->minimum->f;
+            }
         }
         item_4->setText( out.str().c_str() );
 
         QStandardItem* item_5 = new QStandardItem;
         out.str( "" );
         if ( item_2->text() == "f" ) {
-            out << (*it).second->maximum->f;
+            if ( (*it).second->minimum != NULL ) {
+                out << (*it).second->maximum->f;
+            }
         }
         item_5->setText( out.str().c_str() );
 
@@ -1098,31 +1289,76 @@ void Form::updateDestSignalListDisplay() {
 
 }
 
+void Form::initLinkParameterDisplay() {
 
+    this->muteCheckBox->setEnabled( false );
+
+    this->mapTypeComboBox->setEnabled( false );
+
+    this->minClipTypeComboBox->setEnabled( false );
+    this->maxClipTypeComboBox->setEnabled( false );
+
+    this->exprEdit->setEnabled( false );
+
+    this->sourceMinRangeEdit->setEnabled( false );
+    this->sourceMaxRangeEdit->setEnabled( false );
+
+    this->destMinRangeEdit->setEnabled( false );
+    this->destMaxRangeEdit->setEnabled( false );
+
+}
 void Form::updateLinkParameterDisplay( Link *reference ) {
 
-    this->checkBox->setChecked( reference->mapping->muted );
+    this->muteCheckBox->setEnabled( true );
+    this->muteCheckBox->setChecked( reference->mapping->muted );
 
-    this->comboBox->setCurrentIndex( reference->mapping->mode );
+    this->mapTypeComboBox->setEnabled( true );
+    this->mapTypeComboBox->setCurrentIndex( reference->mapping->mode );
 
-    this->lineEdit->setText( reference->mapping->expression );
-    this->lineEdit_1->setText( QString("%1").arg(reference->mapping->range.src_min) );
-    this->lineEdit_2->setText( QString("%1").arg(reference->mapping->range.src_max) );
-    this->lineEdit_3->setText( QString("%1").arg(reference->mapping->range.dest_min) );
-    this->lineEdit_4->setText( QString("%1").arg(reference->mapping->range.dest_max) );
+    this->minClipTypeComboBox->setEnabled( true );
+    this->maxClipTypeComboBox->setEnabled( true );
+    this->minClipTypeComboBox->setCurrentIndex( reference->mapping->clip_min );
+    this->maxClipTypeComboBox->setCurrentIndex( reference->mapping->clip_max );
+
+    this->exprEdit->setEnabled( true );
+    this->exprEdit->setText( reference->mapping->expression );
+
+    this->sourceMinRangeEdit->setEnabled( true );
+    this->sourceMaxRangeEdit->setEnabled( true );
+    this->sourceMinRangeEdit->setText( QString("%1").arg(reference->mapping->range.src_min) );
+    this->sourceMaxRangeEdit->setText( QString("%1").arg(reference->mapping->range.src_max) );
+
+    this->destMinRangeEdit->setEnabled( true );
+    this->destMaxRangeEdit->setEnabled( true );
+    this->destMinRangeEdit->setText( QString("%1").arg(reference->mapping->range.dest_min) );
+    this->destMaxRangeEdit->setText( QString("%1").arg(reference->mapping->range.dest_max) );
 
 }
 void Form::clearLinkParameterDisplay() {
 
-    this->checkBox->setChecked( 0 );
+    this->muteCheckBox->setEnabled( false );
+    this->muteCheckBox->setChecked( 0 );
 
-    this->comboBox->setCurrentIndex( 0 );
+    this->mapTypeComboBox->setEnabled( false );
+    this->mapTypeComboBox->setCurrentIndex( 0 );
 
-    this->lineEdit->setText( "" );
-    this->lineEdit_1->setText( "" );
-    this->lineEdit_2->setText( "" );
-    this->lineEdit_3->setText( "" );
-    this->lineEdit_4->setText( "" );
+    this->minClipTypeComboBox->setEnabled( false );
+    this->maxClipTypeComboBox->setEnabled( false );
+    this->minClipTypeComboBox->setCurrentIndex( 0 );
+    this->maxClipTypeComboBox->setCurrentIndex( 0 );
+
+    this->exprEdit->setEnabled( false );
+    this->exprEdit->setText( "" );
+
+    this->sourceMinRangeEdit->setEnabled( false );
+    this->sourceMaxRangeEdit->setEnabled( false );
+    this->sourceMinRangeEdit->setText( "" );
+    this->sourceMaxRangeEdit->setText( "" );
+
+    this->destMinRangeEdit->setEnabled( false );
+    this->destMaxRangeEdit->setEnabled( false );
+    this->destMinRangeEdit->setText( "" );
+    this->destMaxRangeEdit->setText( "" );
 
 }
 

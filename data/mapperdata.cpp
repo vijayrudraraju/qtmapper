@@ -4,6 +4,17 @@ MapperData::MapperData() {
 
 }
 
+void MapperData::modifyMappingData( mapper_db_mapping record ) {
+
+    std::list<mapper_db_mapping>::iterator dbit;
+    Utility::mapping_search_struct = record;
+    std::replace_if( this->mapping_struct_list.begin(),
+                        this->mapping_struct_list.end(),
+                        Utility::findDbMapping,
+                        record );
+
+}
+
 void MapperData::addDeviceData( mapper_db_device record ) {
 
     std::list<mapper_db_device>::iterator dbit;

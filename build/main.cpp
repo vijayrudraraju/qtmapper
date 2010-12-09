@@ -57,8 +57,14 @@ void dbSignalCallbackFunction( mapper_db_signal record,
                                 void* user ) {
 
     printf( "\nForm::db_signal_callback_function( ... )\n" );
-    printf( "device_name %s name %s type %c is_output %d action %d user %p \n\n",
-            record->device_name, record->name, record->type, record->is_output, action, user );
+    printf( "device_name %s name %s type %c\n",
+            record->device_name, record->name, record->type );
+    if ( record->minimum != NULL ) {
+        printf("minimum->f %f minimum->d %f minimum->i32 %d\n",
+               record->minimum->f, record->minimum->d, record->minimum->i32 );
+    }
+    printf("is_output %d action %d user %p \n\n",
+            record->is_output, action, user );
     if ( action == MDB_NEW ) {
 
         form->addNewSignal( record );
@@ -101,6 +107,10 @@ void dbMappingCallbackFunction( mapper_db_mapping record,
     if ( action == MDB_NEW ) {
 
         form->addNewMapping( record );
+
+    } else if ( action == MDB_MODIFY ) {
+
+        form->modifyMapping( record );
 
     } else if ( action == MDB_REMOVE ) {
 

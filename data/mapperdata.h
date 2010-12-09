@@ -29,6 +29,8 @@ public:
     std::multimap<mapping_pair, mapper_db_mapping> mapping_struct_map;
     std::multimap<mapper_db_device, mapper_db_signal> signal_struct_map;
 
+    void modifyMappingData( mapper_db_mapping record );
+
     void addDeviceData( mapper_db_device record );
     void addMappingData( mapper_db_mapping record );
     void updateAllMappings(  );

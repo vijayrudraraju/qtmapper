@@ -47,6 +47,8 @@ public:
 
     void removeSignal( mapper_db_signal record );
     void addNewSignal( mapper_db_signal record );
+
+    void modifyMapping( mapper_db_mapping record );
     void removeMapping( mapper_db_mapping record );
     void addNewMapping( mapper_db_mapping record );
 
@@ -65,6 +67,17 @@ public:
     //static const char* destination_search_term;
 
 public slots:
+
+    void muteChanged( int flag );
+    void mapTypeChanged( int index );
+    void exprChanged( QString expr );
+    void sourceMinRangeChanged( QString number );
+    void sourceMaxRangeChanged( QString number );
+    void destMinRangeChanged( QString number );
+    void destMaxRangeChanged( QString number );
+    void minClipTypeChanged( int index );
+    void maxClipTypeChanged( int index );
+
     void update();
 
     void clearSources();
@@ -77,6 +90,8 @@ public slots:
     void updatePressedLink( Link* reference );
     void updateSelectedLink( Link* reference );
     void updateUnselectedLink( Link* reference );
+
+    void initLinkParameterDisplay();
     void updateLinkParameterDisplay( Link *reference );
     void clearLinkParameterDisplay( );
 
@@ -106,6 +121,9 @@ protected:
     bool eventFilter( QObject* obj, QEvent* event );
 
 private:
+    void initSignalsAndSlots();
+    void initLabels();
+
     void updateVisualizationLinks( int current_mode );
     void updateVisualizationNodes( int current_mode );
     void updateVisualizationSides( int current_mode );
