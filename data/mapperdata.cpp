@@ -15,7 +15,11 @@ void MapperData::modifyMappingData( mapper_db_mapping record ) {
 
 }
 
+
+
 void MapperData::addDeviceData( mapper_db_device record ) {
+
+    this->removeDeviceData( record );
 
     std::list<mapper_db_device>::iterator dbit;
     Utility::device_search_struct = record;
@@ -39,6 +43,8 @@ void MapperData::addDeviceData( mapper_db_device record ) {
 }
 void MapperData::addSignalData( mapper_db_signal record ) {
 
+    //this->removeSignalData( record );
+
     std::list<mapper_db_device>::iterator it;
     Utility::device_search_struct_name = record->device_name;
     it = std::find_if( this->device_struct_list.begin(),
@@ -51,9 +57,13 @@ void MapperData::addSignalData( mapper_db_signal record ) {
 }
 void MapperData::addMappingData( mapper_db_mapping record ) {
 
+    this->removeMappingData( record );
     this->mapping_struct_list.push_back( record );
 
 }
+
+
+
 void MapperData::updateAllMappings(  ) {
 
     this->mapping_struct_map.clear();
@@ -177,7 +187,12 @@ void MapperData::removeSignalData( mapper_db_signal record ) {
 
     std::multimap<mapper_db_device, mapper_db_signal>::iterator multi_it;
     multi_it = this->signal_struct_map.find( (*it) );
-    this->signal_struct_map.erase( multi_it );
+
+    if ( multi_it != this->signal_struct_map.end() ) {
+
+        this->signal_struct_map.erase( multi_it );
+
+    }
 
 }
 void MapperData::removeMappingData( mapper_db_mapping record ) {

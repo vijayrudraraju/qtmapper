@@ -24,11 +24,11 @@ Form* form;
 void dbDeviceCallbackFunction( mapper_db_device record,
                                 mapper_db_action_t action,
                                 void* user ) {
-
+/*
     printf( "\nForm::db_device_callback_function( ... )\n" );
     printf( "record->name %s action %d user %p \n\n",
             record->name, action, user );
-
+*/
 
 
     if ( action == MDB_NEW ) {
@@ -56,6 +56,7 @@ void dbSignalCallbackFunction( mapper_db_signal record,
                                 mapper_db_action_t action,
                                 void* user ) {
 
+/*
     printf( "\nForm::db_signal_callback_function( ... )\n" );
     printf( "device_name %s name %s type %c\n",
             record->device_name, record->name, record->type );
@@ -65,6 +66,8 @@ void dbSignalCallbackFunction( mapper_db_signal record,
     }
     printf("is_output %d action %d user %p \n\n",
             record->is_output, action, user );
+            */
+
     if ( action == MDB_NEW ) {
 
         form->addNewSignal( record );
@@ -81,9 +84,11 @@ void dbLinkCallbackFunction( mapper_db_link record,
                                 mapper_db_action_t action,
                                 void* user ) {
 
+    /*
     printf( "\nForm::db_link_callback_function( ... )\n" );
     printf( "record->src %s record->dest %s action %d user %p \n\n",
             record->src_name, record->dest_name, action, user );
+            */
 
 }
 
@@ -91,8 +96,14 @@ void dbMappingCallbackFunction( mapper_db_mapping record,
                                 mapper_db_action_t action,
                                 void* user ) {
 
-    printf( "\nForm::db_mapping_callback_function( ... ) action %d\n",
-            action );
+    printf( "\nForm::db_mapping_callback_function( ... )\n" );
+    if ( action == MDB_NEW ) {
+        printf( "action MDB_NEW\n");
+    } else if ( action == MDB_MODIFY ) {
+        printf( "action MDB_MODIFY\n");
+    } else if ( action == MDB_REMOVE ) {
+        printf( "action MDB_REMOVE\n");
+    }
     printf( "src_name %s src_type %c dest_name %s dest_type %c\n",
             record->src_name, record->src_type,
             record->dest_name, record->dest_type );

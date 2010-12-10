@@ -171,6 +171,8 @@ private:
     QPersistentModelIndex selected_signal;
     int signal_selected_flag;
 
+    bool mapping_can_modify_flag;
+
     int default_x;
     int default_y;
 

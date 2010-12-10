@@ -56,143 +56,199 @@ Form::Form( QWidget *parent ) :
 
 }
 
+
+
 void Form::muteChanged( int flag ) {
 
-    printf( "Form::muteChanged %d\n", flag );
+    if ( this->mapping_can_modify_flag ) {
 
-    for ( std::list<Link*>::iterator it =
-            this->selected_mapping_list.begin();
-            it != this->selected_mapping_list.end();
-            it++ ) {
+        printf( "\nForm::muteChanged %d\n", flag );
 
-        (*it)->mapping->muted = flag;
-        mapper_monitor_mapping_modify( this->mon,
-                                       (*it)->mapping,
-                                       MAPPING_MUTED );
+        for ( std::list<Link*>::iterator it =
+                this->selected_mapping_list.begin();
+                it != this->selected_mapping_list.end();
+                it++ ) {
+
+            (*it)->mapping->muted = flag;
+            mapper_monitor_mapping_modify( this->mon,
+                                           (*it)->mapping,
+                                           MAPPING_MUTED );
+
+        }
 
     }
 
 }
 void Form::mapTypeChanged( int index ) {
 
-    for ( std::list<Link*>::iterator it =
-            this->selected_mapping_list.begin();
-            it != this->selected_mapping_list.end();
-            it++ ) {
+    if ( this->mapping_can_modify_flag ) {
 
-        (*it)->mapping->mode = (mapper_mode_type)index;
-        mapper_monitor_mapping_modify( this->mon,
-                                       (*it)->mapping,
-                                       MAPPING_MODE );
+        printf( "\nForm::mapTypeChanged %d\n", index );
+
+        for ( std::list<Link*>::iterator it =
+                this->selected_mapping_list.begin();
+                it != this->selected_mapping_list.end();
+                it++ ) {
+
+            (*it)->mapping->mode = (mapper_mode_type)index;
+            mapper_monitor_mapping_modify( this->mon,
+                                           (*it)->mapping,
+                                           MAPPING_MODE );
+
+        }
 
     }
 
 }
 void Form::exprChanged( QString expr ) {
 
-    for ( std::list<Link*>::iterator it =
-            this->selected_mapping_list.begin();
-            it != this->selected_mapping_list.end();
-            it++ ) {
+    if ( this->mapping_can_modify_flag ) {
 
-        (*it)->mapping->expression = expr.toLatin1().data();
-        mapper_monitor_mapping_modify( this->mon,
-                                       (*it)->mapping,
-                                       MAPPING_EXPRESSION );
+        printf( "\nForm::exprChanged %s\n", expr.toLatin1().data() );
+
+        for ( std::list<Link*>::iterator it =
+                this->selected_mapping_list.begin();
+                it != this->selected_mapping_list.end();
+                it++ ) {
+
+            strcpy( (*it)->mapping->expression, expr.toLatin1().data() );
+            mapper_monitor_mapping_modify( this->mon,
+                                           (*it)->mapping,
+                                           MAPPING_EXPRESSION );
+
+        }
 
     }
 
 }
 void Form::sourceMinRangeChanged( QString number ) {
 
-    for ( std::list<Link*>::iterator it =
-            this->selected_mapping_list.begin();
-            it != this->selected_mapping_list.end();
-            it++ ) {
+    if ( this->mapping_can_modify_flag ) {
 
-        (*it)->mapping->range.src_min = number.toFloat();
-        mapper_monitor_mapping_modify( this->mon,
-                                       (*it)->mapping,
-                                       MAPPING_RANGE_KNOWN );
+        printf( "\nForm::sourceMinRangeChanged %f\n", number.toFloat() );
+
+        for ( std::list<Link*>::iterator it =
+                this->selected_mapping_list.begin();
+                it != this->selected_mapping_list.end();
+                it++ ) {
+
+            (*it)->mapping->range.src_min = number.toFloat();
+            mapper_monitor_mapping_modify( this->mon,
+                                           (*it)->mapping,
+                                           MAPPING_RANGE_KNOWN );
+
+        }
 
     }
 
 }
 void Form::sourceMaxRangeChanged( QString number ) {
 
-    for ( std::list<Link*>::iterator it =
-            this->selected_mapping_list.begin();
-            it != this->selected_mapping_list.end();
-            it++ ) {
+    if ( this->mapping_can_modify_flag ) {
 
-        (*it)->mapping->range.src_max = number.toFloat();
-        mapper_monitor_mapping_modify( this->mon,
-                                       (*it)->mapping,
-                                       MAPPING_RANGE_KNOWN );
+        printf( "\nForm::sourceMaxRangeChanged %f\n", number.toFloat() );
+
+        for ( std::list<Link*>::iterator it =
+                this->selected_mapping_list.begin();
+                it != this->selected_mapping_list.end();
+                it++ ) {
+
+            (*it)->mapping->range.src_max = number.toFloat();
+            mapper_monitor_mapping_modify( this->mon,
+                                           (*it)->mapping,
+                                           MAPPING_RANGE_KNOWN );
+
+        }
 
     }
 
 }
 void Form::destMinRangeChanged( QString number ) {
 
-    for ( std::list<Link*>::iterator it =
-            this->selected_mapping_list.begin();
-            it != this->selected_mapping_list.end();
-            it++ ) {
+    if ( this->mapping_can_modify_flag ) {
 
-        (*it)->mapping->range.dest_min = number.toFloat();
-        mapper_monitor_mapping_modify( this->mon,
-                                       (*it)->mapping,
-                                       MAPPING_RANGE_KNOWN );
+        printf( "\nForm::destMinRangeChanged %f\n", number.toFloat() );
+
+        for ( std::list<Link*>::iterator it =
+                this->selected_mapping_list.begin();
+                it != this->selected_mapping_list.end();
+                it++ ) {
+
+            (*it)->mapping->range.dest_min = number.toFloat();
+            mapper_monitor_mapping_modify( this->mon,
+                                           (*it)->mapping,
+                                           MAPPING_RANGE_KNOWN );
+
+        }
 
     }
 
 }
 void Form::destMaxRangeChanged( QString number ) {
 
-    for ( std::list<Link*>::iterator it =
-            this->selected_mapping_list.begin();
-            it != this->selected_mapping_list.end();
-            it++ ) {
+    if ( this->mapping_can_modify_flag ) {
 
-        (*it)->mapping->range.dest_max = number.toFloat();
-        mapper_monitor_mapping_modify( this->mon,
-                                       (*it)->mapping,
-                                       MAPPING_RANGE_KNOWN );
+        printf( "\nForm::destMaxRangeChanged %f\n", number.toFloat() );
+
+        for ( std::list<Link*>::iterator it =
+                this->selected_mapping_list.begin();
+                it != this->selected_mapping_list.end();
+                it++ ) {
+
+            (*it)->mapping->range.dest_max = number.toFloat();
+            mapper_monitor_mapping_modify( this->mon,
+                                           (*it)->mapping,
+                                           MAPPING_RANGE_KNOWN );
+
+        }
 
     }
 
 }
 void Form::minClipTypeChanged( int index ) {
 
-    for ( std::list<Link*>::iterator it =
-            this->selected_mapping_list.begin();
-            it != this->selected_mapping_list.end();
-            it++ ) {
+    if ( this->mapping_can_modify_flag ) {
 
-        (*it)->mapping->clip_min = (mapper_clipping_type)index;
-        mapper_monitor_mapping_modify( this->mon,
-                                       (*it)->mapping,
-                                       MAPPING_CLIPMIN );
+        printf( "\nForm::minClipTypeChanged %d\n", index );
+
+        for ( std::list<Link*>::iterator it =
+                this->selected_mapping_list.begin();
+                it != this->selected_mapping_list.end();
+                it++ ) {
+
+            (*it)->mapping->clip_min = (mapper_clipping_type)index;
+            mapper_monitor_mapping_modify( this->mon,
+                                           (*it)->mapping,
+                                           MAPPING_CLIPMIN );
+
+        }
 
     }
 
 }
 void Form::maxClipTypeChanged( int index ) {
 
-    for ( std::list<Link*>::iterator it =
-            this->selected_mapping_list.begin();
-            it != this->selected_mapping_list.end();
-            it++ ) {
+    if ( this->mapping_can_modify_flag ) {
 
-        (*it)->mapping->clip_max = (mapper_clipping_type)index;
-        mapper_monitor_mapping_modify( this->mon,
-                                       (*it)->mapping,
-                                       MAPPING_CLIPMAX );
+        printf( "\nForm::maxClipTypeChanged %d\n", index );
+
+        for ( std::list<Link*>::iterator it =
+                this->selected_mapping_list.begin();
+                it != this->selected_mapping_list.end();
+                it++ ) {
+
+            (*it)->mapping->clip_max = (mapper_clipping_type)index;
+            mapper_monitor_mapping_modify( this->mon,
+                                           (*it)->mapping,
+                                           MAPPING_CLIPMAX );
+
+        }
 
     }
 
 }
+
+
 
 void Form::initLabels() {
 
@@ -251,6 +307,8 @@ void Form::initLabels() {
 
 }
 void Form::initSignalsAndSlots() {
+
+    this->mapping_can_modify_flag = false;
 
     connect( this->muteCheckBox, SIGNAL(stateChanged(int)),
              this, SLOT(muteChanged(int)) );
@@ -315,6 +373,8 @@ void Form::initSignalsAndSlots() {
     */
 
 }
+
+
 
 void Form::clearSources() {
 
@@ -1289,20 +1349,26 @@ void Form::updateDestSignalListDisplay() {
 
 }
 
+
+
 void Form::initLinkParameterDisplay() {
 
     this->muteCheckBox->setEnabled( false );
 
+    this->mapTypeLabel->setEnabled( false );
     this->mapTypeComboBox->setEnabled( false );
 
     this->minClipTypeComboBox->setEnabled( false );
     this->maxClipTypeComboBox->setEnabled( false );
 
+    this->exprLabel->setEnabled( false );
     this->exprEdit->setEnabled( false );
 
+    this->sourceRangeLabel->setEnabled( false );
     this->sourceMinRangeEdit->setEnabled( false );
     this->sourceMaxRangeEdit->setEnabled( false );
 
+    this->destRangeLabel->setEnabled( false );
     this->destMinRangeEdit->setEnabled( false );
     this->destMaxRangeEdit->setEnabled( false );
 
@@ -1312,6 +1378,7 @@ void Form::updateLinkParameterDisplay( Link *reference ) {
     this->muteCheckBox->setEnabled( true );
     this->muteCheckBox->setChecked( reference->mapping->muted );
 
+    this->mapTypeLabel->setEnabled( true );
     this->mapTypeComboBox->setEnabled( true );
     this->mapTypeComboBox->setCurrentIndex( reference->mapping->mode );
 
@@ -1320,25 +1387,33 @@ void Form::updateLinkParameterDisplay( Link *reference ) {
     this->minClipTypeComboBox->setCurrentIndex( reference->mapping->clip_min );
     this->maxClipTypeComboBox->setCurrentIndex( reference->mapping->clip_max );
 
+    this->exprLabel->setEnabled( true );
     this->exprEdit->setEnabled( true );
     this->exprEdit->setText( reference->mapping->expression );
 
+    this->sourceRangeLabel->setEnabled( true );
     this->sourceMinRangeEdit->setEnabled( true );
     this->sourceMaxRangeEdit->setEnabled( true );
     this->sourceMinRangeEdit->setText( QString("%1").arg(reference->mapping->range.src_min) );
     this->sourceMaxRangeEdit->setText( QString("%1").arg(reference->mapping->range.src_max) );
 
+    this->destRangeLabel->setEnabled( true );
     this->destMinRangeEdit->setEnabled( true );
     this->destMaxRangeEdit->setEnabled( true );
     this->destMinRangeEdit->setText( QString("%1").arg(reference->mapping->range.dest_min) );
     this->destMaxRangeEdit->setText( QString("%1").arg(reference->mapping->range.dest_max) );
 
+    this->mapping_can_modify_flag = true;
+
 }
 void Form::clearLinkParameterDisplay() {
+
+    this->mapping_can_modify_flag = false;
 
     this->muteCheckBox->setEnabled( false );
     this->muteCheckBox->setChecked( 0 );
 
+    this->mapTypeLabel->setEnabled( false );
     this->mapTypeComboBox->setEnabled( false );
     this->mapTypeComboBox->setCurrentIndex( 0 );
 
@@ -1347,14 +1422,17 @@ void Form::clearLinkParameterDisplay() {
     this->minClipTypeComboBox->setCurrentIndex( 0 );
     this->maxClipTypeComboBox->setCurrentIndex( 0 );
 
+    this->exprLabel->setEnabled( false );
     this->exprEdit->setEnabled( false );
     this->exprEdit->setText( "" );
 
+    this->sourceRangeLabel->setEnabled( false );
     this->sourceMinRangeEdit->setEnabled( false );
     this->sourceMaxRangeEdit->setEnabled( false );
     this->sourceMinRangeEdit->setText( "" );
     this->sourceMaxRangeEdit->setText( "" );
 
+    this->destRangeLabel->setEnabled( false );
     this->destMinRangeEdit->setEnabled( false );
     this->destMaxRangeEdit->setEnabled( false );
     this->destMinRangeEdit->setText( "" );
@@ -1421,6 +1499,8 @@ void Form::removeNodeFromSourceView( Node* the_node ) {
 
 }
 */
+
+
 
 void Form::updatePressedLink( Link *reference ) {
 
