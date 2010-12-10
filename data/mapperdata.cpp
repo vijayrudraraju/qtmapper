@@ -1,3 +1,5 @@
+
+#include <algorithm>
 #include "mapperdata.h"
 
 MapperData::MapperData() {
