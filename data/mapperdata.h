@@ -33,7 +33,7 @@ public:
 
     void addDeviceData( mapper_db_device record );
     void addMappingData( mapper_db_mapping record );
-    void updateAllMappings(  );
+    void updateAllMappingPairs(  );
     void updateMappingPair( mapper_db_mapping record );
     void addSignalData( mapper_db_signal record );
 

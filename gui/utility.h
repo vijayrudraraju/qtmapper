@@ -33,7 +33,7 @@ public:
     static bool findDbDeviceByName( mapper_db_device i );
 
     static bool findDbSignal( mapper_db_signal i );
-    bool findDbSignalPair( std::pair<mapper_db_device, mapper_db_signal> i );
+    static bool findDbSignalPair( std::pair<mapper_db_device, mapper_db_signal> i );
 
     static bool findDbMapping( mapper_db_mapping i );
 

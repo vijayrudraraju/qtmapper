@@ -434,7 +434,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGraphicsView" name="graphics_view_2">
+           <widget class="QGraphicsView" name="mappingGraphicsView">
             <property name="enabled">
              <bool>true</bool>
             </property>

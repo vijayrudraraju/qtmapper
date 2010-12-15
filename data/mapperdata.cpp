@@ -45,7 +45,7 @@ void MapperData::addDeviceData( mapper_db_device record ) {
 }
 void MapperData::addSignalData( mapper_db_signal record ) {
 
-    //this->removeSignalData( record );
+    this->removeSignalData( record );
 
     std::list<mapper_db_device>::iterator it;
     Utility::device_search_struct_name = record->device_name;
@@ -66,7 +66,7 @@ void MapperData::addMappingData( mapper_db_mapping record ) {
 
 
 
-void MapperData::updateAllMappings(  ) {
+void MapperData::updateAllMappingPairs(  ) {
 
     this->mapping_struct_map.clear();
 
@@ -81,6 +81,10 @@ void MapperData::updateAllMappings(  ) {
 
 }
 void MapperData::updateMappingPair( mapper_db_mapping record ) {
+
+    printf( "\nMapperData::updateMappingPair src_name %s, dest_name %s\n",
+            record->src_name,
+            record->dest_name );
 
     QString str = record->src_name;
     QStringList parsed_str = str.split( "/", QString::SkipEmptyParts );
@@ -187,10 +191,20 @@ void MapperData::removeSignalData( mapper_db_signal record ) {
                         this->device_struct_list.end(),
                         Utility::findDbDeviceByName );
 
-    std::multimap<mapper_db_device, mapper_db_signal>::iterator multi_it;
-    multi_it = this->signal_struct_map.find( (*it) );
+    //std::multimap<mapper_db_device, mapper_db_signal>::iterator multi_it;
+    //multi_it = this->signal_struct_map.find( (*it) );
 
-    if ( multi_it != this->signal_struct_map.end() ) {
+    std::pair<std::multimap<mapper_db_device, mapper_db_signal>::iterator,
+        std::multimap<mapper_db_device, mapper_db_signal>::iterator> ret;
+    std::multimap<mapper_db_device, mapper_db_signal>::iterator multi_it;
+    ret = this->signal_struct_map.equal_range( (*it) );
+
+    Utility::signal_search_struct = record;
+    multi_it = std::find_if( ret.first,
+                             ret.second,
+                             Utility::findDbSignalPair );
+
+    if ( multi_it != ret.second ) {
 
         this->signal_struct_map.erase( multi_it );
 
@@ -199,11 +213,17 @@ void MapperData::removeSignalData( mapper_db_signal record ) {
 }
 void MapperData::removeMappingData( mapper_db_mapping record ) {
 
+    printf( "\nMapperData::removeMappingPair src_name %s, dest_name %s\n",
+            record->src_name,
+            record->dest_name );
+
+    printf( "before mapping_struct_list size %d\n", this->mapping_struct_list.size() );
+
     std::list<mapper_db_mapping>::iterator dbit;
     Utility::mapping_search_struct = record;
-    std::remove_if( this->mapping_struct_list.begin(),
-                    this->mapping_struct_list.end(),
-                    Utility::findDbMapping );
+    this->mapping_struct_list.remove_if( Utility::findDbMapping );
+
+    printf( "after mapping_struct_list size %d\n", this->mapping_struct_list.size() );
 
 }
 

@@ -27,9 +27,9 @@ Form::Form( QWidget *parent ) :
     graphics_view->setAlignment( Qt::AlignLeft|Qt::AlignTop );
     graphics_view->setSceneRect( -400, -400, 4000, 4000 );
 
-    graphics_view_2->setScene( &mapping_scene );
-    graphics_view_2->installEventFilter( this );
-    graphics_view_2->setAlignment( Qt::AlignLeft|Qt::AlignTop );
+    mappingGraphicsView->setScene( &mapping_scene );
+    mappingGraphicsView->installEventFilter( this );
+    mappingGraphicsView->setAlignment( Qt::AlignLeft|Qt::AlignTop );
 
     displayed_source_model = new QStandardItemModel( 0, 6 );
     source_list->setModel( displayed_source_model );
@@ -419,22 +419,28 @@ void Form::updateIsDeletable( bool checked ) {
 
     if ( !checked ) {
 
+        this->mappingGraphicsView->setDragMode( QGraphicsView::RubberBandDrag );
+
         for ( std::list<Link*>::iterator it =
                 this->displayed_mapping_list.begin();
                 it != this->displayed_mapping_list.end();
                 it++ ) {
 
+            (*it)->setFlag( QGraphicsItem::ItemIsSelectable, true );
             (*it)->is_deletable = false;
 
         }
 
     } else {
 
+        this->mappingGraphicsView->setDragMode( QGraphicsView::NoDrag );
+
         for ( std::list<Link*>::iterator it =
                 this->displayed_mapping_list.begin();
                 it != this->displayed_mapping_list.end();
                 it++ ) {
 
+            (*it)->setFlag( QGraphicsItem::ItemIsSelectable, false );
             (*it)->is_deletable = true;
 
         }
@@ -468,8 +474,6 @@ void Form::update(  ) {
     this->source_signal_list->resizeColumnToContents( 3 );
     this->source_signal_list->resizeColumnToContents( 4 );
     this->source_signal_list->resizeColumnToContents( 5 );
-
-    //this->updateMappingView();
 
     this->updateIsDeletable( this->deleteButton->isChecked() );
 
@@ -621,7 +625,7 @@ void Form::beginToDrawMapping( const QModelIndex& index ) {
             printf("begin destination side is valid!\n");
             this->selected_dest_circle =
                     this->mapping_scene.addEllipse(
-                             graphics_view_2->width() - dest_signal_rect.height() + 4,
+                             mappingGraphicsView->width() - dest_signal_rect.height() + 4,
                              dest_vertical_offset +
                              dest_signal_rect.topLeft().y() + 1,
                              dest_signal_rect.height() - 2,
@@ -741,7 +745,7 @@ void Form::finishDrawingMapping( const QModelIndex& index ) {
             printf("finish dest side is valid!\n");
             this->selected_dest_circle =
             this->mapping_scene.addEllipse(
-                     graphics_view_2->width() - dest_signal_rect.height() + 4,
+                     mappingGraphicsView->width() - dest_signal_rect.height() + 4,
                      dest_vertical_offset +
                      dest_signal_rect.topLeft().y() + 1,
                      dest_signal_rect.height() - 2,
@@ -824,14 +828,14 @@ void Form::updateMappingView( ) {
     int source_vertical_offset;
     int dest_vertical_offset;
 
-    this->graphics_view_2->
-            viewport()->setFixedSize( graphics_view_2->width(),
-                                      graphics_view_2->height() );
-    this->graphics_view_2->setSceneRect( 0, 0,
-                                      graphics_view_2->width(),
-                                      graphics_view_2->height() );
+    this->mappingGraphicsView->
+            viewport()->setFixedSize( mappingGraphicsView->width(),
+                                      mappingGraphicsView->height() );
+    this->mappingGraphicsView->setSceneRect( 0, 0,
+                                      mappingGraphicsView->width(),
+                                      mappingGraphicsView->height() );
     this->clearMappingView( );
-    this->database->updateAllMappings();
+    this->database->updateAllMappingPairs();
 
     const char* source_device_name;
     const char* source_signal_name;
@@ -969,12 +973,12 @@ void Form::updateMappingView( ) {
                     */
 
 
-            new_link_pointer = new Link( this->graphics_view_2, &mapping_scene );
+            new_link_pointer = new Link( this->mappingGraphicsView, &mapping_scene );
             new_link_pointer->mapping = (*it).second;
             new_link_pointer->setLine( 0,
                                        source_vertical_offset +
                                        source_signal_rect.topLeft().y(),
-                                       graphics_view_2->width(),
+                                       mappingGraphicsView->width(),
                                        dest_vertical_offset +
                                        dest_signal_rect.topLeft().y() );
 
@@ -1013,17 +1017,21 @@ void Form::modifyMapping( mapper_db_mapping record ) {
 
     printf( "\nForm::modifyMapping( ... )\n\n" );
     this->database->modifyMappingData( record );
+    this->updateMappingView();
 
 }
 void Form::removeMapping( mapper_db_mapping record ) {
 
+    printf( "\nForm::removeMapping( ... )\n\n" );
     this->database->removeMappingData( record );
+    this->updateMappingView();
 
 }
 void Form::addNewMapping( mapper_db_mapping record ) {
 
     printf( "\nForm::addNewMapping( ... )\n" );
     this->database->addMappingData( record );
+    this->updateMappingView();
 
 }
 
@@ -1441,66 +1449,6 @@ void Form::clearLinkParameterDisplay() {
 }
 
 
-/*
-void Form::addNodeToDestinationView( Node* the_node ) {
-
-    QModelIndex dummy_index;
-    displayed_dest_model->
-        appendRow( the_node->dest_model_list );
-    destination_signal_list->
-        setFirstColumnSpanned( displayed_dest_model->rowCount()-1,
-                               dummy_index, true );
-    the_node->is_destination = true;
-    the_node->is_source = false;
-    the_node->update();
-
-    //destination_signal_list->expand(
-    //        destination_model->
-    //        indexFromItem( the_node->destination_model_list.first() )
-    //        );
-
-    updateMappingView();
-
-}
-void Form::removeNodeFromDestinationView( Node* the_node ) {
-
-    int i = displayed_dest_model->
-            indexFromItem( the_node->
-                           dest_model_list.first() ).row();
-    displayed_dest_model->takeRow( i );
-    the_node->is_destination = false;
-    the_node->update();
-
-}
-void Form::addNodeToSourceView( Node* the_node ) {
-
-    QModelIndex dummy_index;
-    displayed_source_model->
-        appendRow( the_node->source_model_list );
-    source_signal_list->
-        setFirstColumnSpanned( displayed_source_model->rowCount()-1,
-                               dummy_index, true );
-
-    the_node->is_source = true;
-    the_node->is_destination = false;
-    the_node->update();
-
-    updateMappingView();
-
-}
-void Form::removeNodeFromSourceView( Node* the_node ) {
-
-    int i = displayed_source_model->
-            indexFromItem( the_node->
-                           source_model_list.first() ).row();
-    displayed_source_model->takeRow( i );
-    the_node->is_source = false;
-    the_node->update();
-
-}
-*/
-
-
 
 void Form::updatePressedLink( Link *reference ) {
 
@@ -1634,7 +1582,6 @@ bool Form::eventFilter( QObject *obj, QEvent *event ) {
                 ((QResizeEvent*)event)->size().width(),
                 ((QResizeEvent*)event)->size().height() );
                 */
-        //updateMappingView();
         return true;
 
     } else if ( event->type() == QEvent::Show) {
@@ -1674,7 +1621,6 @@ void Form::updateEditSelectionMode( int index ) {
     } else if ( index == 1 ) {
 
         printf( "selected edit tab %d\n", index );
-        //updateMappingView();
 
     }
 
